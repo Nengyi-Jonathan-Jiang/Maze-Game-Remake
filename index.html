@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Maze-Game-Remake</title>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <style>
+            body { 
+                background-color: black; 
+                margin: 0; padding: 0; 
+                position: absolute; 
+                top: 0; left: 0; 
+                width: 100vw; height: 100vh; 
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            canvas {
+                --d: min((100vw / 16), (100vh / 9));
+                width: calc(var(--d) * 16);
+                height: calc(var(--d) * 9);
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="game-canvas"></canvas>
+        <script src="script.ts" type="text/babel" data-type="module" data-presets="typescript"></script>
+    </body>
+</html>
