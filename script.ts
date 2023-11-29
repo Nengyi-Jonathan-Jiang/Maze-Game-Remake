@@ -33,11 +33,11 @@ class Sprite {
     }
 
     public get sw() {
-        return this.source.sw ?? this.source.img.width
+        return this.source.sw ?? 1
     }
 
     public get sh() {
-        return this.source.sh ?? this.source.img.height
+        return this.source.sh ?? 1
     }
 
     public get sx() {
@@ -77,54 +77,54 @@ class Canvas {
         ctx.imageSmoothingEnabled = false;
         ctx.setTransform(
             width / viewportWidth, 0,
-            0, height / -viewportHeight,
-            width / 2, height / 2
+            0, height / viewportHeight,
+            0, 0
         )
     }
 
     public drawSprite(sprite: Sprite, x: number, y: number) {
         const {ctx} = this;
         const {width, height, img, sx, sy, sw, sh} = sprite;
-        const topLeftX = x - width / 2;
-        const topLeftY = y - height / 2;
 
         ctx.drawImage(
             img,
             sx * img.width, sy * img.height, sw * img.width, sh * img.height,
-            topLeftX, topLeftY, width, height
+            x, y, width, height
         );
+
+        // ctx.strokeStyle = "#f00";
+        // ctx.lineWidth = 0.01;
+        // ctx.strokeRect(x, y, width, height);
+    }
+
+    clear(color?: string | CanvasGradient | CanvasPattern) {
+        const {viewportWidth, viewportHeight} = this;
+
+        this.ctx.clearRect(-viewportWidth / 2, -viewportHeight / 2, viewportWidth, viewportHeight);
+
+        if (color) {
+            this.ctx.fillStyle = color;
+            this.ctx.fillRect(-viewportWidth / 2, -viewportHeight / 2, viewportWidth, viewportHeight);
+        }
     }
 }
-
-const canvas: Canvas = new Canvas(document.getElementById('game-canvas') as HTMLCanvasElement, 16, 9);
-
-window.onresize = (f => (f(), f))(() => canvas.resizeToDisplaySize());
-
-
-const TEMP_maze_sprite = new Sprite(4, 4, {
-    img: await loadImage('res/Cells.png')
-})
-
-requestAnimationFrame(function frame() {
-    canvas.drawSprite(TEMP_maze_sprite, 0, 0);
-
-    requestAnimationFrame(frame);
-})
 
 type int = number;
 type Vector2Int = [int, int];
 type SSet<T> = Map<string, T>
 
-function createSSet<T>(values?:Iterable<readonly [string, T]>) : SSet<T>{
+function createSSet<T>(values?: Iterable<readonly [string, T]>): SSet<T> {
     return new Map(values);
 }
 
-function createMatrix<T>(rows: int, cols: int) : T[][] {
+function createMatrix<T>(rows: int, cols: int): T[][] {
     return new Array<T[]>(rows).fill(null).map(() => new Array<T>(cols));
 }
+
 function randInt(size: int) {
     return ~~(Math.random() * size);
 }
+
 function GetRandomElement<T>(l: Iterable<T>): T {
     const arr: T[] = [...l];
     return arr[randInt(arr.length)];
@@ -142,26 +142,26 @@ class MazeDataCell {
     public constructor(r: number, c: number) {
         this.Row = r;
         this.Col = c;
-        this.Reset();
+        this.reset();
     }
 
-    public Reset() {
+    public reset() {
         this._wallT = this._wallB = this._wallL = this._wallR = true;
     }
 
-    public HasTopWall() : boolean {
+    public HasTopWall(): boolean {
         return this._wallT;
     }
 
-    public HasBottomWall() : boolean {
+    public HasBottomWall(): boolean {
         return this._wallB;
     }
 
-    public HasLeftWall() : boolean {
+    public HasLeftWall(): boolean {
         return this._wallL;
     }
 
-    public HasRightWall() : boolean {
+    public HasRightWall(): boolean {
         return this._wallR;
     }
 
@@ -183,10 +183,9 @@ class MazeDataCell {
 }
 
 
-
 enum Neighbor { Top, Left, Bottom, Right }
 
-public class MazeData {
+class MazeData {
     public readonly Size: number;
     private readonly _grid: MazeDataCell[][];
 
@@ -203,7 +202,7 @@ public class MazeData {
     private Restart(): void {
         for (let row = 0; row < this.Size; row++)
             for (let col = 0; col < this.Size; col++)
-                this._grid[row][col].Reset();
+                this._grid[row][col].reset();
     }
 
     public GetNeighbors(row: number, col: number, valid: (pos: Vector2Int, neighbor: Neighbor) => boolean): Neighbor[] {
@@ -219,7 +218,7 @@ public class MazeData {
         return neighbors;
     }
 
-    public RemoveNeighborWall(neighbor: Neighbor, row: number, col: number) : Vector2Int {
+    public RemoveNeighborWall(neighbor: Neighbor, row: number, col: number): Vector2Int {
         switch (neighbor) {
             case Neighbor.Top:
                 this.RemoveWallT(row, col);
@@ -238,7 +237,7 @@ public class MazeData {
         }
     }
 
-    public HasNeighbor(row: number, col: number, neighbor: Neighbor) : boolean {
+    public HasNeighbor(row: number, col: number, neighbor: Neighbor): boolean {
         switch (neighbor) {
             case Neighbor.Top:
                 return !this._grid[row][col].HasTopWall();
@@ -254,7 +253,7 @@ public class MazeData {
     }
 
     public GetNeighbor(neighbor: Neighbor, row: number, col: number): Vector2Int {
-        switch (neighbor){
+        switch (neighbor) {
             case Neighbor.Top:
                 return [row - 1, col];
             case Neighbor.Bottom:
@@ -294,54 +293,95 @@ public class MazeData {
 }
 
 type Obstacle = {
-    readonly type: "Door"|"Key",
+    readonly type: "Door" | "Key" | "Win",
     readonly color: number
 };
 
-class MazeBuilder {
-    public Size: number;
+const MAZE_IMG = await loadImage('res/Cells.png');
+const KEYS_IMG = await loadImage("res/Runes.png");
+const DOOR_SPRITE = new Sprite(1, 1, {img: await loadImage('res/Obstacle.png')});
+const WIN_SPRITE = new Sprite(1, 1, {img: await loadImage('res/Finish.png')});
 
-    public static MazeCellTextures: Sprite[] = (() => {
-        const img = loadImage('res/Cells.png');
-        return [
-            [], [], [], [],
-            [], [], [], [],
-            [], [], [], [],
-            [], [], [], []
-        ].map(i => new Sprite());
-    })();
-    public static MazeKeyTextures: Sprite[] = (() => {
-        return [];
-    })();
+const MAZE_KEY_TEXTURES = (() => {
+    const num_keys = 9
+    return [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => new Sprite(1, 1, {
+        img: KEYS_IMG,
+        sx: i/num_keys,
+        sy: 1/num_keys
+    }))
+})();
+const MAZE_CELL_TEXTURES = (() => {
+    const img = MAZE_IMG;
+
+    const textures = new Array<Sprite>(16).fill(null);
+
+    const arr = [
+        [0b1111, 0b0111, 0b0101, 0b1101],
+        [0b1011, 0b0011, 0b0001, 0b1001],
+        [0b1010, 0b0010, 0b0000, 0b1000],
+        [0b1110, 0b0110, 0b0100, 0b1100]
+    ];
+
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+        textures[arr[i][j]] = new Sprite(1, 1, {
+            img, sx: i * 0.25, sy: j * 0.25, sw: 0.25, sh: 0.25
+        })
+    }
+
+    return textures;
+})();
+
+class MazeBuilder {
+    public size: number;
+
+    public static MazeCellTextures: Sprite[] = MAZE_CELL_TEXTURES;
+    public static MazeKeyTextures: Sprite[] = MAZE_KEY_TEXTURES;
     public static MazeKeyTexturesDeactivated: Sprite[] = (() => {
         return [];
     })();
 
-    private _mazeData: MazeData;
-    private _obstacles: Obstacle[][];
-    private _cells: Sprite[][];
+    private readonly _mazeData: MazeData;
+    private readonly _obstacles: Obstacle[][];
+    private readonly cell_sprites: Sprite[][];
 
-    // Start is called before the first frame update
-    private Start(): void {
-        this.Build();
+    constructor(size: number) {
+        this.size = size;
+        this.cell_sprites = createMatrix(this.size, this.size);
+        this._mazeData = new MazeData(this.size);
+        this._obstacles = createMatrix(this.size, this.size);
+        this.generate();
     }
 
-    private Build(): void {
-        this._mazeData = new MazeData(this.Size);
-        this._obstacles = createMatrix(this.Size, this.Size);
+    private generate(): void {
+        let {visited, parent, children, start, end} = this.carveMaze();
+        this.createObstacles(end, visited, start, parent, children);
 
-        const visited = createMatrix<boolean>(this.Size, this.Size);
-        const parent = createMatrix<Vector2Int>(this.Size, this.Size);
-        const children = createMatrix<Vector2Int[]>(this.Size, this.Size);
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                const c = this._mazeData.getCell(i, j);
 
-        for (let i = 0; i < this.Size; i++)
-            for (let j = 0; j < this.Size; j++)
+                const wallsIdx = (+c.HasRightWall() << 3)
+                    + (+c.HasBottomWall() << 2)
+                    + (+c.HasLeftWall() << 1)
+                    + (+c.HasTopWall());
+                this.cell_sprites[i][j] = MazeBuilder.MazeCellTextures[wallsIdx];
+            }
+        }
+    }
+
+    private carveMaze() {
+        const visited = createMatrix<boolean>(this.size, this.size);
+        const parent = createMatrix<Vector2Int>(this.size, this.size);
+        const children = createMatrix<Vector2Int[]>(this.size, this.size);
+
+        for (let i = 0; i < this.size; i++)
+            for (let j = 0; j < this.size; j++)
                 children[i][j] = [];
 
         const stk: Vector2Int[] = [];
         const dStk: number[] = [];
 
-        const start: Vector2Int = [randInt(this.Size), randInt(this.Size)];
+        const start: Vector2Int = [randInt(this.size), randInt(this.size)];
         let end = start;
         let maxDepth = 0;
 
@@ -360,10 +400,12 @@ class MazeBuilder {
             visited[row][col] = true;
             //Get neighbors
             const neighbors = this._mazeData.GetNeighbors(row, col, p => !visited[p[0]][p[1]]);
-            if (neighbors.length < 2) {
+
+            if (neighbors.length <= 1) {
                 stk.pop();
                 dStk.pop();
             }
+
             if (neighbors.length == 0) continue;
             const newPos = this._mazeData.RemoveNeighborWall(
                 neighbors[randInt(neighbors.length)],
@@ -377,24 +419,17 @@ class MazeBuilder {
             parent[newPos[0]][newPos[1]] = p;
         }
 
-        const targetPosition = end;
-        this._obstacles[end[0]][end[1]] = null; // Target
+        return {visited, parent, children, start, end};
+    }
 
-        for (let i = 0; i < this.Size; i++) {
-            for (let j = 0; j < this.Size; j++) {
-                const c = this._mazeData[i][j];
-                const wallsIdx = (c.HasRightWall() << 3)
-                               + (c.HasBottomWall() << 2)
-                               + (c.HasLeftWall() << 1)
-                               + (c.HasTopWall() << 0);
-                this._cells[i][j] = MazeBuilder.MazeCellTextures[wallsIdx];
-            }
-        }
+    private createObstacles(end: Vector2Int, visited: boolean[][], start: Vector2Int, parent: Vector2Int[][], children: Vector2Int[][][]) {
+        const targetPosition = end;
+        this._obstacles[end[0]][end[1]] = {type: "Win", color: 0}; // Target
 
         visited[start[0]][start[1]] = visited[end[0]][end[1]] = false;
 
-        const hasDoor = createMatrix<boolean>(this.Size, this.Size);
-        const used = createMatrix<boolean>(this.Size, this.Size);
+        const hasDoor = createMatrix<boolean>(this.size, this.size);
+        const used = createMatrix<boolean>(this.size, this.size);
         used[start[0]][start[1]] = used[end[0]][end[1]] = true;
 
         const solutionPath = createSSet<Vector2Int>([
@@ -414,12 +449,13 @@ class MazeBuilder {
                 try {
                     const path = i == 0 ? [...solutionPath] : [...keyPaths].filter(([key]: [string, Vector2Int]) => !solutionPath.has(key));
                     doorPos = GetRandomElement(path.map(i => i[1]).filter(s => !used[s[0]][s[1]]));
-                }
-                catch {
+                } catch {
                     doorPos = GetRandomElement([...solutionPath].map(i => i[1]).filter(s => !used[s[0], s[1]]));
                 }
+            } catch (e) {
+                console.error(e);
+                continue;
             }
-            catch { break }
 
             used[doorPos[0]][doorPos[1]] = hasDoor[doorPos[0]][doorPos[1]] = true;
 
@@ -450,19 +486,21 @@ class MazeBuilder {
                         !keyPaths.has(s.toString()) &&
                         children[s[0]][s[1]].length == 0
                     ));
-                }
-                catch {
+                    console.log('a', keyPos);
+                } catch {
                     keyPos = GetRandomElement(possibleKeyPositions.filter(s =>
                         !used[s[0]][s[1]] && !keyPaths.has(s.toString())
                     ));
                 }
-            }
-            catch {
+            } catch (e) {
+                console.error(e);
                 continue;
             }
 
             const keyPath = MazeBuilder.GetRoute(start, keyPos, parent);
             keyPaths = new Map([...keyPaths, ...keyPath]);
+
+            console.log(doorPos, keyPos)
 
             this._obstacles[doorPos[0]][doorPos[1]] = {
                 type: "Door",
@@ -480,17 +518,21 @@ class MazeBuilder {
 
     private static GetRoute(start: Vector2Int, target: Vector2Int, parent: Vector2Int[][]): SSet<Vector2Int> {
         const res = createSSet<Vector2Int>();
+        console.log(`Routing:`)
         while (true) {
             target = parent[target[0]][target[1]];
-            if (target == start)
-            break;
+            console.log(`Route ${start} to ${target}`)
+            if (target.toString() == start.toString()) {
+                break;
+            }
             res.set(target.toString(), target);
         }
+        console.log('Done routing')
         return res;
     }
 
     public CanMove(x: number, y: number, neighbor: Neighbor): boolean {
-        switch(neighbor) {
+        switch (neighbor) {
             case Neighbor.Top:
                 return !this._mazeData[x][y].HasTopWall();
             case Neighbor.Bottom:
@@ -511,15 +553,40 @@ class MazeBuilder {
     }
 
 
-
-
-
-
     public draw(canvas: Canvas) {
-        for(let i = 0; i < this.Size; i++) {
-            for(let j = 0; j < this.Size; j++) {
-
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                if (this.cell_sprites[i][j]) {
+                    canvas.drawSprite(this.cell_sprites[i][j], i, j)
+                }
+                if (this._obstacles[i][j]) {
+                    const {color, type} = this._obstacles[i][j];
+                    switch (type) {
+                        case "Door":
+                            canvas.drawSprite(DOOR_SPRITE, i, j)
+                            break;
+                        case "Win":
+                            canvas.drawSprite(WIN_SPRITE, i, j);
+                            break;
+                    }
+                }
             }
         }
     }
 }
+
+
+const maze = new MazeBuilder(18);
+
+const canvas: Canvas = new Canvas(
+    document.getElementById('game-canvas') as HTMLCanvasElement,
+    32, 18
+);
+
+window.onresize = (f => (f(), f))(() => canvas.resizeToDisplaySize());
+
+requestAnimationFrame(function frame() {
+    canvas.clear();
+    maze.draw(canvas);
+    requestAnimationFrame(frame);
+})
