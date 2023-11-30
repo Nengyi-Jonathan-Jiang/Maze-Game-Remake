@@ -58,7 +58,7 @@ class Canvas {
     public readonly viewportWidth: number;
     public readonly viewportHeight: number;
 
-    private readonly ctx: CanvasRenderingContext2D;
+    public readonly ctx: CanvasRenderingContext2D;
 
     constructor(canvasElement: HTMLCanvasElement, viewportWidth: number, viewportHeight: number) {
         this.canvasElement = canvasElement;
@@ -117,8 +117,18 @@ function createSSet<T>(values?: Iterable<readonly [string, T]>): SSet<T> {
     return new Map(values);
 }
 
-function createMatrix<T>(rows: int, cols: int): T[][] {
-    return new Array<T[]>(rows).fill(null).map(() => new Array<T>(cols));
+function createMatrix<T>(rows: int, cols: int, value?: T | ((row: number, col: number) => T)): T[][] {
+    return new Array<T[]>(rows).fill(null).map(
+        (_, row) => new Array<T>(cols).fill(null).map(
+            (_, col) => (
+                value instanceof Function ?
+                    value(row, col) :
+                value !== undefined ?
+                    value :
+                    null
+            )
+        )
+    );
 }
 
 function randInt(size: int) {
@@ -306,8 +316,8 @@ const MAZE_KEY_TEXTURES = (() => {
     const num_keys = 9
     return [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => new Sprite(1, 1, {
         img: KEYS_IMG,
-        sx: i/num_keys,
-        sy: 1/num_keys
+        sx: i / num_keys,
+        sy: 1 / num_keys
     }))
 })();
 const MAZE_CELL_TEXTURES = (() => {
@@ -429,7 +439,7 @@ class MazeBuilder {
         visited[start[0]][start[1]] = visited[end[0]][end[1]] = false;
 
         const hasDoor = createMatrix<boolean>(this.size, this.size);
-        const used = createMatrix<boolean>(this.size, this.size);
+        const used = createMatrix<boolean>(this.size, this.size, false);
         used[start[0]][start[1]] = used[end[0]][end[1]] = true;
 
         const solutionPath = createSSet<Vector2Int>([
@@ -444,75 +454,115 @@ class MazeBuilder {
         let keyPaths = createSSet<Vector2Int>(solutionPath);
 
         for (let i = 0, color = 0; i < 100 && color < MazeBuilder.MazeKeyTextures.length; i++) {
-            let doorPos: Vector2Int;
-            try {
-                try {
-                    const path = i == 0 ? [...solutionPath] : [...keyPaths].filter(([key]: [string, Vector2Int]) => !solutionPath.has(key));
-                    doorPos = GetRandomElement(path.map(i => i[1]).filter(s => !used[s[0]][s[1]]));
-                } catch {
-                    doorPos = GetRandomElement([...solutionPath].map(i => i[1]).filter(s => !used[s[0], s[1]]));
-                }
-            } catch (e) {
-                console.error(e);
-                continue;
-            }
 
-            used[doorPos[0]][doorPos[1]] = hasDoor[doorPos[0]][doorPos[1]] = true;
+            /*
+             * The idea is, say we have fixed start and end
+             *
+             * then dfs starting from start and draw "before" directed edges as we search ("node A comes MUST BE
+             * REACHED before node B").
+             *
+             * we start by randomly placing door X on any random node reachable from the end node using "before"
+             * edges (use DFS). This guarantees that we never have an unnecessary door
+             *
+             * When we place key X, we draw a "before" edge from the door to the key ("key X MUST BE REACHED
+             * before door X"). The valid key positions are thus any position that does not result in a cycle in
+             * the graph. (The maze is unsolvable iff there is a cycle in the graph)
+             *
+             * To find these nodes, we can DFS from door X BACKWARDS through the "before" edges, and eliminate
+             * any node we find. The remaining nodes are all valid.
+             *
+             * Now for the theory of anti-doors. Anti-door X can be traversed if door X was traversed or key X was
+             * NOT traversed.
+             */
 
-            const doorPath = MazeBuilder.GetRoute(start, doorPos, parent);
-
-            const reachable = createSSet<Vector2Int>(doorPath);
-            const stk2: Vector2Int[] = [...doorPath.values()];
-            while (stk2.length > 0) {
-                const pos = stk2.pop();
-                let neighbors = this._mazeData.GetNeighbors(pos[0], pos[1], p =>
-                    !hasDoor[p[0]][p[1]] &&
-                    !reachable.has(p.toString())
-                    && children[pos[0]][pos[1]].includes(p)
-                );
-                for (let n of neighbors.map(d => this._mazeData.GetNeighbor(d, pos[0], pos[1]))) {
-                    reachable.set(n.toString(), n);
-                    stk2.push(n);
-                }
-            }
-
-            const possibleKeyPositions: Vector2Int[] = [...reachable.values()];
-
-            let keyPos: Vector2Int;
-            try {
-                try {
-                    keyPos = GetRandomElement(possibleKeyPositions.filter(s =>
-                        !used[s[0]][s[1]] &&
-                        !keyPaths.has(s.toString()) &&
-                        children[s[0]][s[1]].length == 0
-                    ));
-                    console.log('a', keyPos);
-                } catch {
-                    keyPos = GetRandomElement(possibleKeyPositions.filter(s =>
-                        !used[s[0]][s[1]] && !keyPaths.has(s.toString())
-                    ));
-                }
-            } catch (e) {
-                console.error(e);
-                continue;
-            }
-
-            const keyPath = MazeBuilder.GetRoute(start, keyPos, parent);
-            keyPaths = new Map([...keyPaths, ...keyPath]);
-
-            console.log(doorPos, keyPos)
-
-            this._obstacles[doorPos[0]][doorPos[1]] = {
-                type: "Door",
-                color,
-            }
-            this._obstacles[keyPos[0]][keyPos[1]] = {
-                type: "Key",
-                color,
-            }
-            used[keyPos[0]][keyPos[1]] = true;
-
-            color++;
+            console.log(`Generating door for color ${color}`)
+            //
+            // let doorPos: Vector2Int;
+            // try {
+            //     try {
+            //         const path = i == 0
+            //             ? [...solutionPath]
+            //             : [...keyPaths].filter(([key]: [string, Vector2Int]) => !solutionPath.has(key));
+            //         doorPos = GetRandomElement(path.map(i => i[1]).filter(s => !used[s[0]][s[1]]));
+            //     } catch {
+            //         doorPos = GetRandomElement([...solutionPath].map(i => i[1]).filter(s => !used[s[0]][s[1]]));
+            //     }
+            // } catch (e) {
+            //     console.error(e);
+            //     break;
+            // }
+            //
+            // used[doorPos[0]][doorPos[1]] = hasDoor[doorPos[0]][doorPos[1]] = true;
+            //
+            // const doorPath = MazeBuilder.GetRoute(start, doorPos, parent);
+            //
+            // const reachable = createSSet<Vector2Int>(doorPath);
+            // const stk2: Vector2Int[] = [...doorPath.values()];
+            // while (stk2.length > 0) {
+            //     const pos = stk2.pop();
+            //     let neighbors = this._mazeData.GetNeighbors(pos[0], pos[1], p =>
+            //         !hasDoor[p[0]][p[1]] &&
+            //         !reachable.has(p.toString())
+            //         && children[pos[0]][pos[1]].includes(p)
+            //     );
+            //     for (let n of neighbors.map(d => this._mazeData.GetNeighbor(d, pos[0], pos[1]))) {
+            //         reachable.set(n.toString(), n);
+            //         stk2.push(n);
+            //     }
+            // }
+            //
+            // const possibleKeyPositions: Vector2Int[] = [...reachable.values()];
+            //
+            // let keyPos: Vector2Int;
+            // try {
+            //     try {
+            //         keyPos = GetRandomElement(possibleKeyPositions.filter(s =>
+            //             !used[s[0]][s[1]]
+            //             && !keyPaths.has(s.toString())
+            //             && children[s[0]][s[1]].length == 0
+            //         ));
+            //         console.log('a',
+            //             possibleKeyPositions.filter(s =>
+            //                 !used[s[0]][s[1]]
+            //             ),
+            //             keyPaths,
+            //             possibleKeyPositions.filter(s =>
+            //                     !used[s[0]][s[1]]
+            //                 // && !keyPaths.has(s.toString())
+            //             ),
+            //             possibleKeyPositions.filter(s =>
+            //                 !used[s[0]][s[1]]
+            //                 && !keyPaths.has(s.toString())
+            //                 && children[s[0]][s[1]].length == 0
+            //             ),
+            //             keyPos);
+            //     } catch {
+            //         keyPos = GetRandomElement(possibleKeyPositions.filter(s =>
+            //             !used[s[0]][s[1]] && !keyPaths.has(s.toString())
+            //         ));
+            //     }
+            // } catch (e) {
+            //     console.error(e);
+            //     used[doorPos[0]][doorPos[1]] = hasDoor[doorPos[0]][doorPos[1]] = false;
+            //     continue;
+            // }
+            //
+            // const keyPath = MazeBuilder.GetRoute(start, keyPos, parent);
+            // keyPaths = new Map([...keyPaths, ...keyPath]);
+            //
+            // console.log(doorPos, keyPos)
+            //
+            // this._obstacles[doorPos[0]][doorPos[1]] = {
+            //     type: "Door",
+            //     color,
+            // }
+            // this._obstacles[keyPos[0]][keyPos[1]] = {
+            //     type: "Key",
+            //     color,
+            // }
+            // used[keyPos[0]][keyPos[1]] = true;
+            //
+            // color++;
         }
     }
 
