@@ -1,80 +1,9 @@
 alert('WASD to move, E to go down a layer, Q to go up a layer. Get to the trophy.');
-const loadImage = (() => {
-    const imageCache = new Map;
-    return async function loadImage(url) {
-        if (imageCache.has(url))
-            return imageCache.get(url);
-        const image = document.createElement('img');
-        return new Promise(resolve => {
-            imageCache.set(url, image);
-            image.onload = _ => resolve(image);
-            image.src = url;
-        });
-    };
-})();
-class Sprite {
-    constructor(width, height, source) {
-        this.width = width;
-        this.height = height;
-        this.source = source;
-    }
-    get sw() {
-        var _a;
-        return (_a = this.source.sw) !== null && _a !== void 0 ? _a : 1;
-    }
-    get sh() {
-        var _a;
-        return (_a = this.source.sh) !== null && _a !== void 0 ? _a : 1;
-    }
-    get sx() {
-        var _a;
-        return (_a = this.source.sx) !== null && _a !== void 0 ? _a : 0;
-    }
-    get sy() {
-        var _a;
-        return (_a = this.source.sy) !== null && _a !== void 0 ? _a : 0;
-    }
-    get img() {
-        return this.source.img;
-    }
-}
-class Canvas {
-    constructor(canvasElement, viewportWidth, viewportHeight) {
-        this.canvasElement = canvasElement;
-        this.viewportWidth = viewportWidth;
-        this.viewportHeight = viewportHeight;
-        this.ctx = canvasElement.getContext('2d');
-    }
-    resizeToDisplaySize() {
-        const { canvasElement, ctx, viewportWidth, viewportHeight } = this;
-        const width = canvasElement.width = canvasElement.clientWidth;
-        const height = canvasElement.height = canvasElement.clientHeight;
-        ctx.imageSmoothingEnabled = false;
-        ctx.setTransform(width / viewportWidth, 0, 0, height / viewportHeight, 0, 0);
-    }
-    drawSprite(sprite, x, y) {
-        const { ctx } = this;
-        const { width, height, img, sx, sy, sw, sh } = sprite;
-        ctx.drawImage(img, sx * img.width, sy * img.height, sw * img.width, sh * img.height, x, y, width, height);
-        // ctx.strokeStyle = "#f00";
-        // ctx.lineWidth = 0.01;
-        // ctx.strokeRect(x, y, width, height);
-    }
-    clear(color) {
-        this.ctx.save();
-        if (color) {
-            this.ctx.fillStyle = color;
-            this.ctx.fillRect(0, 0, this.canvasElement.width, this.canvasElement.height);
-        }
-        else {
-            this.ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
-        }
-        this.ctx.restore();
-    }
-}
+
 function createSSet(values) {
     return new Map(values);
 }
+
 function createMatrix(rows, cols, lyrs, value) {
     return new Array(rows).fill(null).map((_, row) => new Array(cols).fill(null).map((_, col) => new Array(lyrs).fill(null).map((_, lyr) => (value instanceof Function ?
         value(row, col, lyr) :
@@ -82,13 +11,16 @@ function createMatrix(rows, cols, lyrs, value) {
             value :
             null))));
 }
+
 function randInt(size) {
     return ~~(Math.random() * size);
 }
+
 function GetRandomElement(l) {
     const arr = [...l];
     return arr[randInt(arr.length)];
 }
+
 class MazeDataCell {
     constructor(r, c, l) {
         this.Row = r;
@@ -96,47 +28,61 @@ class MazeDataCell {
         this.Lyr = l;
         this.reset();
     }
+
     reset() {
         this._wallF = this._wallB = this._wallL = this._wallR = this._wallU = this._wallD = true;
     }
+
     HasFrontWall() {
         return this._wallF;
     }
+
     HasBackWall() {
         return this._wallB;
     }
+
     HasLeftWall() {
         return this._wallL;
     }
+
     HasRightWall() {
         return this._wallR;
     }
+
     HasTopWall() {
         return this._wallU;
     }
+
     HasBottomWall() {
         return this._wallD;
     }
+
     RemoveFrontWall() {
         this._wallF = false;
     }
+
     RemoveBackWall() {
         this._wallB = false;
     }
+
     RemoveLeftWall() {
         this._wallL = false;
     }
+
     RemoveRightWall() {
         this._wallR = false;
     }
+
     RemoveTopWall() {
         this._wallU = false;
     }
+
     RemoveBottomWall() {
         this._wallD = false;
     }
 }
-var Neighbor;
+
+let Neighbor;
 (function (Neighbor) {
     Neighbor[Neighbor["Front"] = 0] = "Front";
     Neighbor[Neighbor["Left"] = 1] = "Left";
@@ -145,10 +91,11 @@ var Neighbor;
     Neighbor[Neighbor["Top"] = 4] = "Top";
     Neighbor[Neighbor["Bottom"] = 5] = "Bottom";
 })(Neighbor || (Neighbor = {}));
-;
+
 const ALL_NEIGHBORS = [
     Neighbor.Front, Neighbor.Left, Neighbor.Back, Neighbor.Right, Neighbor.Top, Neighbor.Bottom
 ];
+
 function nextInDirection(row, col, lyr, direction) {
     switch (direction) {
         case Neighbor.Front:
@@ -167,18 +114,26 @@ function nextInDirection(row, col, lyr, direction) {
             throw new Error("Invalid direction");
     }
 }
+
 function opposite(direction) {
     switch (direction) {
-        case Neighbor.Front: return Neighbor.Back;
-        case Neighbor.Back: return Neighbor.Front;
-        case Neighbor.Left: return Neighbor.Right;
-        case Neighbor.Right: return Neighbor.Left;
-        case Neighbor.Top: return Neighbor.Bottom;
-        case Neighbor.Bottom: return Neighbor.Top;
+        case Neighbor.Front:
+            return Neighbor.Back;
+        case Neighbor.Back:
+            return Neighbor.Front;
+        case Neighbor.Left:
+            return Neighbor.Right;
+        case Neighbor.Right:
+            return Neighbor.Left;
+        case Neighbor.Top:
+            return Neighbor.Bottom;
+        case Neighbor.Bottom:
+            return Neighbor.Top;
         default:
             throw new Error("Invalid direction");
     }
 }
+
 class MazeData {
     constructor(size, layers) {
         this.Size = size;
@@ -190,6 +145,7 @@ class MazeData {
                     this._grid[row][col][layer] = new MazeDataCell(row, col, layer);
         this.Restart();
     }
+
     Restart() {
         for (let a of this._grid)
             for (let b of a)
@@ -197,6 +153,7 @@ class MazeData {
                     cell.reset();
                 }
     }
+
     GetNeighbors(row, col, lyr, valid) {
         const neighbors = [];
         if (row > 0 && valid([row - 1, col, lyr], Neighbor.Front))
@@ -213,6 +170,7 @@ class MazeData {
             neighbors.push(Neighbor.Bottom);
         return neighbors;
     }
+
     RemoveNeighborWall(neighbor, row, col, lyr) {
         switch (neighbor) {
             case Neighbor.Front:
@@ -237,6 +195,7 @@ class MazeData {
                 throw new Error("Invalid Neighbor to Remove");
         }
     }
+
     HasNeighbor(row, col, lyr, neighbor) {
         switch (neighbor) {
             case Neighbor.Front:
@@ -255,6 +214,7 @@ class MazeData {
                 throw new Error("Invalid Neighbor");
         }
     }
+
     GetNeighbor(neighbor, row, col, lyr) {
         switch (neighbor) {
             case Neighbor.Front:
@@ -273,39 +233,47 @@ class MazeData {
                 throw new Error("Invalid Neighbor");
         }
     }
+
     getCell(row, col, lyr) {
         return this._grid[row][col][lyr];
     }
+
     RemoveWallF(row, col, lyr) {
         this._grid[row][col][lyr].RemoveFrontWall();
         this._grid[row - 1][col][lyr].RemoveBackWall();
     }
+
     RemoveWallB(row, col, lyr) {
         this._grid[row][col][lyr].RemoveBackWall();
         this._grid[row + 1][col][lyr].RemoveFrontWall();
     }
+
     RemoveWallL(row, col, lyr) {
         this._grid[row][col][lyr].RemoveLeftWall();
         this._grid[row][col - 1][lyr].RemoveRightWall();
     }
+
     RemoveWallR(row, col, lyr) {
         this._grid[row][col][lyr].RemoveRightWall();
         this._grid[row][col + 1][lyr].RemoveLeftWall();
     }
+
     RemoveWallU(row, col, lyr) {
         this._grid[row][col][lyr].RemoveTopWall();
         this._grid[row][col][lyr - 1].RemoveBottomWall();
     }
+
     RemoveWallD(row, col, lyr) {
         this._grid[row][col][lyr].RemoveBottomWall();
         this._grid[row][col][lyr + 1].RemoveTopWall();
     }
 }
-const MAZE_IMG = await loadImage('res/Cells.png');
-const WIN_SPRITE = new Sprite(1, 1, { img: await loadImage('res/Finish.png') });
-const PLAYER_SPRITE = new Sprite(1, 1, { img: await loadImage('res/Player.png') });
-const GO_UP_IMG = await loadImage('res/Up.png');
-const GO_DOWN_IMG = await loadImage('res/Down.png');
+
+const MAZE_IMG = await Sprite.loadImage('res/Cells.png');
+const WIN_SPRITE = new Sprite(1, 1, {img: await Sprite.loadImage('res/Finish.png')});
+const PLAYER_SPRITE = new Sprite(1, 1, {img: await Sprite.loadImage('res/Player.png')});
+const GO_UP_IMG = await Sprite.loadImage('res/Up.png');
+const GO_DOWN_IMG = await Sprite.loadImage('res/Down.png');
 const MAZE_CELL_TEXTURES = (() => {
     const img = MAZE_IMG;
     const textures = new Array(16).fill(null);
@@ -323,6 +291,7 @@ const MAZE_CELL_TEXTURES = (() => {
         }
     return textures;
 })();
+
 class MazeBuilder {
     constructor(size, layers) {
         this.size = size;
@@ -331,8 +300,9 @@ class MazeBuilder {
         this._mazeData = new MazeData(this.size, this.layers);
         this.generate();
     }
+
     generate() {
-        const { start, end } = this.carveMaze();
+        const {start, end} = this.carveMaze();
         this.start = start;
         this.end = end;
         for (let i = 0; i < this.size; i++) {
@@ -348,6 +318,7 @@ class MazeBuilder {
             }
         }
     }
+
     carveMaze() {
         console.log('carving maze');
         // TODO: implement loop-erased maze generation algorithm?
@@ -392,8 +363,9 @@ class MazeBuilder {
             stk.push(newPos);
             dStk.push(depth + 1);
         }
-        return { start, end };
+        return {start, end};
     }
+
     CanMove(x, y, z, neighbor) {
         let cell = this._mazeData.getCell(x, y, z);
         switch (neighbor) {
@@ -411,6 +383,7 @@ class MazeBuilder {
                 return !cell.HasBottomWall();
         }
     }
+
     draw(canvas, currLayer) {
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
@@ -419,9 +392,9 @@ class MazeBuilder {
                     const goUp = !this._mazeData.getCell(i, j, currLayer).HasTopWall();
                     const goDown = !this._mazeData.getCell(i, j, currLayer).HasBottomWall();
                     if (goDown)
-                        canvas.drawSprite(new Sprite(1, 1, { img: GO_DOWN_IMG }), i, j);
+                        canvas.drawSprite(new Sprite(1, 1, {img: GO_DOWN_IMG}), i, j);
                     if (goUp)
-                        canvas.drawSprite(new Sprite(1, 1, { img: GO_UP_IMG }), i, j);
+                        canvas.drawSprite(new Sprite(1, 1, {img: GO_UP_IMG}), i, j);
                 }
             }
         }
@@ -430,8 +403,13 @@ class MazeBuilder {
         }
     }
 }
+
 MazeBuilder.MazeCellTextures = MAZE_CELL_TEXTURES;
-function defaultIfNaN(x, defaultValue) { return isNaN(x) ? defaultValue : x; }
+
+function defaultIfNaN(x, defaultValue) {
+    return isNaN(x) ? defaultValue : x;
+}
+
 const S = 10;
 const L = 4;
 let maze = new MazeBuilder(S, L);
@@ -458,8 +436,7 @@ requestAnimationFrame(function frame() {
         anim++;
         if (anim === 60)
             anim = -1;
-    }
-    else {
+    } else {
         canvas.clear();
         maze.draw(canvas, currPos[2]);
         if (targetPos != null) {
@@ -472,8 +449,7 @@ requestAnimationFrame(function frame() {
                 currPos = targetPos;
                 targetPos = null;
             }
-        }
-        else if (eQueue.length) {
+        } else if (eQueue.length) {
             movePlayer(eQueue.shift());
         }
         canvas.drawSprite(PLAYER_SPRITE, currPos[0], currPos[1]);
@@ -483,6 +459,7 @@ requestAnimationFrame(function frame() {
     }
     requestAnimationFrame(frame);
 });
+
 function movePlayer(direction) {
     targetPos = currPos;
     while (maze.CanMove(...targetPos, direction)) {
@@ -496,9 +473,10 @@ function movePlayer(direction) {
             break;
     }
 }
+
 // @ts-ignore
 window.Neighbor = Neighbor;
-window.onkeydown = ({ key }) => {
+window.onkeydown = ({key}) => {
     switch (key.toLowerCase()) {
         case 'a':
             eQueue.push(Neighbor.Front);
