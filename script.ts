@@ -502,10 +502,10 @@ class MazeBuilder {
 
             if(neighbors.includes(Neighbor.Front) || neighbors.includes(Neighbor.Back)
             || neighbors.includes(Neighbor.Left) || neighbors.includes(Neighbor.Right)) {
-                if (neighbors.includes(Neighbor.Top) && Math.random() > 0.) {
+                if (neighbors.includes(Neighbor.Top) && Math.random() > 0.3) {
                     neighbors.splice(neighbors.indexOf(Neighbor.Top), 1);
                 }
-                if (neighbors.includes(Neighbor.Bottom) && Math.random() > 0.) {
+                if (neighbors.includes(Neighbor.Bottom) && Math.random() > 0.3) {
                     neighbors.splice(neighbors.indexOf(Neighbor.Bottom), 1);
                 }
             }
