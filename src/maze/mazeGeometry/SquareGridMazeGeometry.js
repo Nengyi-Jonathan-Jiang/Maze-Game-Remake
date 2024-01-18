@@ -59,20 +59,12 @@ class SquareGridMazeGeometry extends MazeGeometry {
         ), this.rows, this.cols);
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
-                let neighbors = [];
-                if (i > 0) {
-                    neighbors.push(result[i - 1][j])
-                } else neighbors.push(null)
-                if (i < this.rows - 1) {
-                    neighbors.push(result[i + 1][j])
-                } else neighbors.push(null)
-                if (j > 0) {
-                    neighbors.push(result[i][j - 1])
-                } else neighbors.push(null)
-                if (j < this.cols - 1) {
-                    neighbors.push(result[i][j + 1])
-                } else neighbors.push(null)
-                result[i][j].neighbors = neighbors;
+                result[i][j].neighbors = [
+                    result[i - 1]?.[j] ?? null,
+                    result[i + 1]?.[j] ?? null,
+                    result[i]?.[j - 1] ?? null,
+                    result[i]?.[j + 1] ?? null,
+                ];
             }
         }
 

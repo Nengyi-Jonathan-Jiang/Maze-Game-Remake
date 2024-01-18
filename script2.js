@@ -1,4 +1,4 @@
-alert('WASD to move, E to go down a layer, Q to go up a layer. Get to the trophy.');
+// alert('WASD to move, E to go down a layer, Q to go up a layer. Get to the trophy.');
 
 const WIN_SPRITE = new Sprite(1, 1, {img: Sprite.loadImage('res/Finish.png')});
 const PLAYER_SPRITE = new Sprite(1, 1, {img: Sprite.loadImage('res/Player.png')});
@@ -13,7 +13,7 @@ const L = 4;
 const mazeGeometry = new SquareGridMazeGeometry(S, S);
 const carver = cells => new DFSMazeCarver(cells);
 let maze = new Maze(mazeGeometry, carver);
-maze.carve();
+// maze.carve();
 
 const canvas = new Canvas(document.getElementById('game-canvas'), S, S);
 window.onresize = (f => (f(), f))(() => canvas.resizeToDisplaySize());
@@ -32,7 +32,6 @@ requestAnimationFrame(function frame() {
             canvas.drawSprite(sprite, x, y)
         });
     }
-
 
     canvas.ctx.strokeStyle = '#0f4';
     canvas.ctx.lineWidth = 0.01;
@@ -54,8 +53,9 @@ requestAnimationFrame(function frame() {
                 new SquareGridMazeGeometry(S, S),
                 carver
             );
-            maze.carve();
-            currPos = maze.nodes[0].displayPos;
+            // maze.carve();
+            currCell = maze.nodes[0];
+            currPos = currCell.displayPos;
         }
         anim++;
         if (anim === 60)
@@ -82,17 +82,16 @@ requestAnimationFrame(function frame() {
 
 function movePlayer(direction) {
     while (currCell.isConnectedTo(currCell.allNeighbors[direction])) {
-    // if(currCell.allNeighbors[direction] !== null)
         currCell = currCell.allNeighbors[direction];
         // If there is a branch, exit
-        // if (![0,1,2,3].every(d => {
-        //     // no branch = equal or opposite or
-        //     return d === direction || d === (direction ^ 1) ||
-        //         // branch not exists
-        //         !currCell.isConnectedTo(currCell.allNeighbors[d]);
-        // })) {
-        //     break;
-        // }
+        if (![0,1,2,3].every(d => {
+            // no branch = equal or opposite or
+            return d === direction || d === (direction ^ 1) ||
+                // branch not exists
+                !currCell.isConnectedTo(currCell.allNeighbors[d]);
+        })) {
+            break;
+        }
     }
     console.log(currCell.connectedNeighbors);
     targetPos = currCell.displayPos;
@@ -118,6 +117,8 @@ window.onkeydown = ({key}) => {
         // case 'e':
         //     eQueue.push(Neighbor.Bottom);
         //     break;
+        case 'l':
+            maze.carveStep();
     }
 };
 

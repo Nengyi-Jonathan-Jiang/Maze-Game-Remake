@@ -11,7 +11,6 @@ class MazeNode {
     #identifier;
 
 
-
     /**
      * @param identifier
      * @param {[number,number]} displayPos
@@ -33,7 +32,7 @@ class MazeNode {
 
     /** @param {MazeNode} other */
     connectTo(other) {
-        if(other === null || !this.#neighbors.includes(other)) {
+        if(other === null || !this.#neighbors.includes(other) || !other.#neighbors.includes(this)) {
             throw new Error("Error: connecting two incompatible cells");
         }
 
@@ -57,7 +56,7 @@ class MazeNode {
 
     /** @type {MazeNode[]} */
     get unusedNeighbors() {
-        return [...this.#neighbors].filter(i => i !== null && !this.isConnectedTo(i));
+        return this.allNeighbors.filter(i => i !== null && !this.isConnectedTo(i));
     }
 
     get identifier() {
@@ -71,7 +70,7 @@ class MazeNode {
 
     /** @type {boolean[]} */
     get connectedNeighbors() {
-        return this.#neighbors.map(i => this.isConnectedTo(i));
+        return this.allNeighbors.map(i => this.isConnectedTo(i));
     }
 
     /** @returns {[number, number]} */

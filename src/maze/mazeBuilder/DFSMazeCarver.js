@@ -15,19 +15,25 @@ class DFSMazeCarver extends MazeCarver {
     }
 
     step() {
-        if(this.isFinished) return;
+        while(!this.isFinished) {
+            const p = this.#stack[this.#stack.length - 1];
+            this.#visited.add(p);
+            //Get neighbors
+            const neighbors = p.unusedNeighbors.filter(i => !this.#visited.has(i));
+            if(neighbors.length < 2) {
+                this.#stack.pop();
+            }
+            if(neighbors.length === 0) {
+                continue;
+            }
 
-        const p = this.#stack[this.#stack.length - 1];
-        this.#visited.add(p);
-        //Get neighbors
-        const neighbors = p.unusedNeighbors.filter(i => !this.#visited.has(i));
-        if(neighbors.length < 2) this.#stack.pop();
-        if(neighbors.length === 0) return;
+            const neighbor = randEl(neighbors);
+            p.connectTo(neighbor);
 
-        const neighbor = randEl(neighbors);
-        p.connectTo(neighbor);
+            this.#stack.push(neighbor);
 
-        this.#stack.push(neighbor);
+            break;
+        }
     }
 
     get isFinished() {
