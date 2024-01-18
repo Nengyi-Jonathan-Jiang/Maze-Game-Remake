@@ -1,11 +1,11 @@
 /**
  * @typedef {{
- *     img: HTMLImageElement,
+ *     img: HTMLImageElement | Promise<HTMLImageElement>,
  *     sx?: number,
  *     sy?: number,
  *     sw?: number,
  *     sh?: number
- * }} SpriteSoruce
+ * }} SpriteSource
  */
 
 class Sprite {
@@ -13,18 +13,26 @@ class Sprite {
     width;
     /** @type {number} */
     height;
-    /** @type {SpriteSoruce} */
+    /** @type {SpriteSource} */
     source;
+    /** @type {HTMLImageElement} */
+    #img;
 
     /**
      * @param {number} width
      * @param {number} height
-     * @param {SpriteSoruce} source
+     * @param {SpriteSource} source
      */
     constructor(width, height, source) {
         this.width = width;
         this.height = height;
         this.source = source;
+
+        if(source.img instanceof Promise) {
+            this.#img = null;
+            source.img.then(img => this.#img = img);
+        }
+        else this.#img = source.img;
     }
 
     /** @type {number} */
@@ -53,19 +61,20 @@ class Sprite {
 
     /** @type {HTMLImageElement} */
     get img() {
-        return this.source.img;
+        return this.#img;
     }
 
 
     /** @type {Map<string, HTMLImageElement>} */
-    #imageCache = new Map;
+    static #imageCache = new Map;
     /** @param {string} url */
     static async loadImage(url){
-        if (this.#imageCache.has(url))
-            return this.#imageCache.get(url);
+        const imageCache = Sprite.#imageCache;
+        if (imageCache.has(url))
+            return imageCache.get(url);
         const image = document.createElement('img');
         return new Promise(resolve => {
-            this.#imageCache.set(url, image);
+            imageCache.set(url, image);
             image.onload = _ => resolve(image);
             image.src = url;
         });

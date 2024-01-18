@@ -5,16 +5,35 @@ class SquareGridMazeGeometry extends MazeGeometry {
     #cols;
 
     /** @type {Sprite[][]} */
-    static MAZE_CELL_TEXTURES = createMatrix((i, j) => {
-        new Sprite(1, 1, {
-            img: null, sx: i * 0.25, sy: j * 0.25, sw: 0.25, sh: 0.25
-        })
-    }, 4, 4);
+    static MAZE_CELL_TEXTURES = createMatrix((i, j) => new Sprite(
+        1, 1, {
+            img: Sprite.loadImage('res/Cells.png'), sx: i * 0.25, sy: j * 0.25, sw: 0.25, sh: 0.25
+        }
+    ), 4, 4);
 
-    static {
-        Sprite.loadImage('res/Cells.png').then(img => {
-            this.MAZE_CELL_TEXTURES.forEach(i => i.forEach(j => j.source.img = img));
-        })
+    /**
+     * @param {boolean} front
+     * @param {boolean} back
+     * @param {boolean} left
+     * @param {boolean} right
+     */
+    static getSprite([front, back, left, right]){
+        const hash = (+right << 3) + (+back << 2) + (+left << 1) + (+front);
+        const magicArray = [
+            [0b1111, 0b0111, 0b0101, 0b1101],
+            [0b1011, 0b0011, 0b0001, 0b1001],
+            [0b1010, 0b0010, 0b0000, 0b1000],
+            [0b1110, 0b0110, 0b0100, 0b1100]
+        ];
+
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                if ((~hash & 15) === magicArray[i][j]) {
+                    return [SquareGridMazeGeometry.MAZE_CELL_TEXTURES[i][j]];
+                }
+            }
+        }
+        return [];
     }
 
     constructor(rows, cols) {
@@ -33,26 +52,11 @@ class SquareGridMazeGeometry extends MazeGeometry {
 
     generate() {
         /** @type {MazeNode[][]} */
-        let result = createMatrix(
-            (i, j) => new MazeNode([i, j], [i, j], ([front, back, left, right]) => {
-                const hash = (+right << 3) + (+back << 2) + (+left << 1) + (+front);
-                const magicArray = [
-                    [0b1111, 0b0111, 0b0101, 0b1101],
-                    [0b1011, 0b0011, 0b0001, 0b1001],
-                    [0b1010, 0b0010, 0b0000, 0b1000],
-                    [0b1110, 0b0110, 0b0100, 0b1100]
-                ];
-                for(let i = 0; i < 4; i++) {
-                    for (let j = 0; j < 4; j++) {
-                        if (hash === magicArray[i][j]) {
-                            return [SquareGridMazeGeometry.MAZE_CELL_TEXTURES[i][j]];
-                        }
-                    }
-                }
-                return [];
-            }),
-            this.rows, this.cols
-        );
+        let result = createMatrix((i, j) => new MazeNode(
+            [i, j],
+            [i, j],
+            connectedNeighbors => SquareGridMazeGeometry.getSprite(connectedNeighbors)
+        ), this.rows, this.cols);
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 let neighbors = [];
