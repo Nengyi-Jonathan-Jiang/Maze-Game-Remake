@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Maze-Game-Remake</title>
-        <script src="babel.min.js"></script>
+        <title></title>
         <style>
             body { 
                 background-color: #77421C;
@@ -22,9 +21,15 @@
                 outline: 1px solid white;
             }
         </style>
+
+		<script src="src/util.js"></script>
+		<script src="src/maze/MazeNode.js"></script>
+		<script src="src/maze/mazeGeometry/MazeGeometry.js"></script>
+		<script src="src/maze/mazeGeometry/SquareGridMazeGeometry.js"></script>
+		<script src="src/maze/mazeGeometry/CubicalGridMazeGeometry.js"></script>
     </head>
     <body>
         <canvas id="game-canvas"></canvas>
-        <script src="script.ts" type="text/babel" data-type="module" data-presets="typescript"></script>
+        <script src="script.js" type="module"></script>
     </body>
 </html>

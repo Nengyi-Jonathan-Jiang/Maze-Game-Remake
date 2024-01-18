@@ -1,0 +1,2 @@
+TODO: add more geometries (triangle, hex, hyperbolic heptagonal?)
+
