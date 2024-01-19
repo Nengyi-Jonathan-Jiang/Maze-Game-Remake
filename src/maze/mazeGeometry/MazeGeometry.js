@@ -18,4 +18,11 @@ class MazeGeometry {
      * @returns {number}
      */
     get displayHeight() {}
+
+    /**
+     * @abstract
+     * @param {string} key
+     * @returns {number | number[] | null}
+     */
+    getDirectionForKey(key) {}
 }

@@ -26,14 +26,10 @@ class CubicalGridMazeGeometry extends MazeGeometry {
      * @param {boolean} left
      * @param {boolean} right
      * @param {boolean} tunnel
-     * @param {MazeNode} node
      */
-    static getSprite([front, back, left, right, tunnel], node){
-        const [i, j, k] = node.displayPos;
-
-        const stairs = tunnel ? ((i & 1) ^ (j & 1) ^ (k & 1)) === 0 ?
-            [CubicalGridMazeGeometry.GO_UP_IMG]:
-            [CubicalGridMazeGeometry.GO_DOWN_IMG]:
+    static getSprite([front, back, left, right, up, down]){
+        const stairs = up ? [CubicalGridMazeGeometry.GO_UP_IMG] :
+            down ? [CubicalGridMazeGeometry.GO_DOWN_IMG]:
             []
 
         return [...SquareGridMazeGeometry.getSprite([front, back, left, right]), ...stairs];
@@ -49,8 +45,7 @@ class CubicalGridMazeGeometry extends MazeGeometry {
         for(let i = 0; i < this.rows; i++) {
             for(let j = 0; j < this.cols; j++) {
                 for(let k = 0; k < this.lyrs; k++) {
-
-
+                    const connectDirection = ((i & 1) ^ (j & 1) ^ (k & 1)) === 0;
 
                     result[i][j][k].neighbors = [
                         result[i - 1]?.[j]?.[k] || null,
@@ -59,7 +54,8 @@ class CubicalGridMazeGeometry extends MazeGeometry {
                         result[i]?.[j + 1]?.[k] || null,
 
                         // Only allow connections between layers in a grid pattern
-                        (((i & 1) ^ (j & 1) ^ (k & 1)) === 0 ? result[i]?.[j]?.[k - 1]: result[i]?.[j]?.[k + 1]) || null,
+                        connectDirection && result[i]?.[j]?.[k - 1] || null,
+                        !connectDirection && result[i]?.[j]?.[k + 1] || null
                     ];
                 }
             }
@@ -73,6 +69,17 @@ class CubicalGridMazeGeometry extends MazeGeometry {
     }
 
     get displayHeight() {
-        return this.cols;
+        return this.cols + 1;
+    }
+
+    getDirectionForKey(key) {
+        switch (key.toLowerCase()) {
+            case 'a': return 0;
+            case 'd': return 1;
+            case 'w': return 2;
+            case 's': return 3;
+            case ' ': return [4, 5];
+        }
+        return null;
     }
 }

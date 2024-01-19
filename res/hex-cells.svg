@@ -1,11 +1,12 @@
-<svg width="8000" height="6928" viewBox="0 0 8 6.92820323" xmlns="http://www.w3.org/2000/svg">
+<svg width="8000" height="8000" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
     <template>
         <g id="b">
-            <path d="M 0 .5 L .25 1 .75 1 1 .5 .75 0 .25 0" fill="#442610"/>
-            <ellipse cx=".5" cy=".5" rx=".3333333333" ry=".384900176" fill="#221308"/>
+            <path d="M 0 .5 L .25 1 .75 1 1 .5 .75 0 .25 0" fill="#77421C"/>
+            <path d="M .5 .27778 L .66667 .38889 .66667 .61111 .5 .72222 .33333 .61111 .33333 .38889" fill="#442610"/>
+<!--            <ellipse cx=".5" cy=".5" rx=".166666666" ry="0.192450013" fill="#221308"/>-->
         </g>
         <g id="c0">
-            <path d="M .4 0 L .6 0 .6 .2 .4 .2" fill="#221308"/>
+            <path d="M .33333 0 L .66667 0 .66667 .5 .33333 .5" fill="#442610"/>
         </g>
         <g id="c1">
             <g transform="scale(1 1.15470053838)">
@@ -44,7 +45,7 @@
         </g>
     </template>
 
-    <g transform="scale(1 0.86602540378)">
+    <g transform="translate(8 -0) rotate(90) scale(1 -1) translate(0 -8)">
         <g transform="translate(0 0)">
             <use href="#b"/>
         </g>

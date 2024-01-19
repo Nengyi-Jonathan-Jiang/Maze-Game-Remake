@@ -78,4 +78,14 @@ class SquareGridMazeGeometry extends MazeGeometry {
     get displayHeight() {
         return this.cols;
     }
+
+    getDirectionForKey(key) {
+        switch (key.toLowerCase()) {
+            case 'a': return 0;
+            case 'd': return 1;
+            case 'w': return 2;
+            case 's': return 3;
+        }
+        return null;
+    }
 }

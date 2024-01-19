@@ -4,21 +4,24 @@ class HexagonalGridMazeGeometry extends MazeGeometry {
 
     /** @type {Sprite[][]} */
     static MAZE_CELL_TEXTURES = createMatrix((i, j) => new Sprite(
-        2 / Math.sqrt(3), 1, {
+        1, 2 / Math.sqrt(3), {
             img: Sprite.loadImage('res/hex-cells.png'), sx: i * 0.125, sy: j * 0.125, sw: 0.125, sh: 0.125
         }
     ), 8, 8);
 
     /**
-     * @param {boolean} t
-     * @param {boolean} b
+     * @param {boolean} l
+     * @param {boolean} r
      * @param {boolean} tr
      * @param {boolean} bl
      * @param {boolean} tl
      * @param {boolean} br
      */
-    static getSprite([t, b, tr, bl, tl, br]){
-        return [HexagonalGridMazeGeometry.MAZE_CELL_TEXTURES[+t + (+b << 1) + (+tr << 2)][+bl + (+tl << 1) + (+br << 2)]];
+    static getSprite([l, r, tr, bl, tl, br]) {
+        return [HexagonalGridMazeGeometry.MAZE_CELL_TEXTURES
+            [+br + (+tr << 1) + (+bl << 2)]
+            [+l + (+r << 1) + (+tl << 2)]
+        ];
     }
 
     constructor(size) {
@@ -37,18 +40,18 @@ class HexagonalGridMazeGeometry extends MazeGeometry {
             Math.abs(i - j) < this.size
         ) ? new MazeNode(
             [i, j],
-            [i * Math.sqrt(3) / 2, j + (this.size - i - 1) / 2],
+            [i + (this.size - j - 1) / 2, j * Math.sqrt(3) / 2],
             connectedNeighbors => HexagonalGridMazeGeometry.getSprite(connectedNeighbors)
         ) : null, 2 * this.size - 1, 2 * this.size - 1);
         for (let i = 0; i < 2 * this.size - 1; i++) {
             for (let j = 0; j < 2 * this.size - 1; j++) {
-                if(result[i][j]) result[i][j].neighbors = [
-                    result[i]?.[j - 1] ?? null,
-                    result[i]?.[j + 1] ?? null,
-                    result[i + 1]?.[j] ?? null,
+                if (result[i][j]) result[i][j].neighbors = [
                     result[i - 1]?.[j] ?? null,
+                    result[i + 1]?.[j] ?? null,
                     result[i + 1]?.[j + 1] ?? null,
                     result[i - 1]?.[j - 1] ?? null,
+                    result[i]?.[j + 1] ?? null,
+                    result[i]?.[j - 1] ?? null,
                 ];
             }
         }
@@ -57,9 +60,29 @@ class HexagonalGridMazeGeometry extends MazeGeometry {
     }
 
     get displayWidth() {
-        return (this.size - 1/3) * Math.sqrt(3)
+        return this.size * 2 - 1;
     }
+
     get displayHeight() {
-        return this.size * 2 - 1
+        return (this.size - 1 / 3) * Math.sqrt(3)
+    }
+
+
+    getDirectionForKey(key) {
+        switch (key.toLowerCase()) {
+            case 'a':
+                return 0;
+            case 'd':
+                return 1;
+            case 'x':
+                return 2;
+            case 'w':
+                return 3;
+            case 'z':
+                return 4;
+            case 'e':
+                return 5;
+        }
+        return null;
     }
 }
