@@ -1,3 +1,7 @@
+
+
+// This class is actually a lie! For gameplay purposes, not all cells can be connected to each other up/down.
+// Instead, up/down connections alternate in a grid pattern to prevent consecutive tunnels
 class CubicalGridMazeGeometry extends MazeGeometry {
     #rows; #cols; #lyrs;
 
@@ -21,14 +25,16 @@ class CubicalGridMazeGeometry extends MazeGeometry {
      * @param {boolean} back
      * @param {boolean} left
      * @param {boolean} right
-     * @param {boolean} top
-     * @param {boolean} bottom
+     * @param {boolean} tunnel
+     * @param {MazeNode} node
      */
-    static getSprite([front, back, left, right, top, bottom]){
-        const stairs = [
-            ...(top ? [CubicalGridMazeGeometry.GO_UP_IMG] : []),
-            ...(bottom ? [CubicalGridMazeGeometry.GO_DOWN_IMG] : []),
-        ]
+    static getSprite([front, back, left, right, tunnel], node){
+        const [i, j, k] = node.displayPos;
+
+        const stairs = tunnel ? ((i & 1) ^ (j & 1) ^ (k & 1)) === 0 ?
+            [CubicalGridMazeGeometry.GO_UP_IMG]:
+            [CubicalGridMazeGeometry.GO_DOWN_IMG]:
+            []
 
         return [...SquareGridMazeGeometry.getSprite([front, back, left, right]), ...stairs];
     }
@@ -37,36 +43,36 @@ class CubicalGridMazeGeometry extends MazeGeometry {
         /** @type {MazeNode[][][]} */
         let result = createMatrix((i, j, k) => new MazeNode(
             [i, j, k],
-            [i, j],
-            connectedNeighbors => CubicalGridMazeGeometry.getSprite(connectedNeighbors)
+            [i, j, k],
+            (connectedNeighbors, node) => CubicalGridMazeGeometry.getSprite(connectedNeighbors, node)
         ), this.rows, this.cols, this.lyrs);
         for(let i = 0; i < this.rows; i++) {
             for(let j = 0; j < this.cols; j++) {
-                for(let k = 0; k < this.cols; k++) {
-                    let neighbors = [];
-                    if (i > 0) {
-                        neighbors.push(result[i - 1][j][k])
-                    }
-                    if (i < this.rows - 1) {
-                        neighbors.push(result[i + 1][j][k])
-                    }
-                    if (j > 0) {
-                        neighbors.push(result[i][j - 1][k])
-                    }
-                    if (j < this.cols - 1) {
-                        neighbors.push(result[i][j + 1][k])
-                    }
-                    if (k > 0) {
-                        neighbors.push(result[i][j][k - 1])
-                    }
-                    if (k < this.lyrs - 1) {
-                        neighbors.push(result[i][j][k + 1])
-                    }
-                    result[i][j][k].neighbors = neighbors;
+                for(let k = 0; k < this.lyrs; k++) {
+
+
+
+                    result[i][j][k].neighbors = [
+                        result[i - 1]?.[j]?.[k] || null,
+                        result[i + 1]?.[j]?.[k] || null,
+                        result[i]?.[j - 1]?.[k] || null,
+                        result[i]?.[j + 1]?.[k] || null,
+
+                        // Only allow connections between layers in a grid pattern
+                        (((i & 1) ^ (j & 1) ^ (k & 1)) === 0 ? result[i]?.[j]?.[k - 1]: result[i]?.[j]?.[k + 1]) || null,
+                    ];
                 }
             }
         }
 
         return [].concat(...result.map(i => [].concat(...i)));
+    }
+
+    get displayWidth() {
+        return this.rows;
+    }
+
+    get displayHeight() {
+        return this.cols;
     }
 }

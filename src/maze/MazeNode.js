@@ -1,7 +1,7 @@
 class MazeNode {
     /** @type {(MazeNode|null)[]} */
     #neighbors;
-    /** @type {(connectedNeighbors: boolean[]) => Sprite[]} */
+    /** @type {(connectedNeighbors: boolean[], node: MazeNode) => Sprite[]} */
     #spriteFunction;
     /** @type {[number, number]} */
     #displayPos;
@@ -14,7 +14,7 @@ class MazeNode {
     /**
      * @param identifier
      * @param {[number,number]} displayPos
-     * @param {(connectedNeighbors: boolean[]) => Sprite[]} spriteFunction
+     * @param {(connectedNeighbors: boolean[], node: MazeNode) => Sprite[]} spriteFunction
      */
     constructor(identifier, displayPos, spriteFunction) {
         this.#spriteFunction = spriteFunction;
@@ -65,7 +65,7 @@ class MazeNode {
 
     /** @type {Sprite[]} */
     get sprites() {
-        return this.#spriteFunction(this.connectedNeighbors);
+        return this.#spriteFunction(this.connectedNeighbors, this);
     }
 
     /** @type {boolean[]} */

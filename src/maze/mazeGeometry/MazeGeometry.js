@@ -6,4 +6,16 @@ class MazeGeometry {
      * @returns {MazeNode[]}
      */
     generate(){}
+
+    /**
+     * @abstract
+     * @returns {number}
+     */
+    get displayWidth() {}
+
+    /**
+     * @abstract
+     * @returns {number}
+     */
+    get displayHeight() {}
 }

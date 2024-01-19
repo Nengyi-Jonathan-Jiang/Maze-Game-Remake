@@ -15,9 +15,11 @@
                 justify-content: center;
             }
             canvas {
-                --d: min(100vw, 100vh);
-                width: calc(var(--d));
-                height: calc(var(--d));
+				--w-scale: 1;
+				--h-scale: 1;
+                --d: min(100vw / var(--w-scale), 100vh / var(--h-scale));
+                width: calc(var(--d) * var(--w-scale));
+                height: calc(var(--d) * var(--h-scale));
                 outline: 1px solid white;
             }
         </style>
@@ -29,12 +31,13 @@
 		<script src="src/maze/mazeGeometry/MazeGeometry.js"></script>
 		<script src="src/maze/mazeGeometry/SquareGridMazeGeometry.js"></script>
 		<script src="src/maze/mazeGeometry/CubicalGridMazeGeometry.js"></script>
+		<script src="src/maze/mazeGeometry/HexagonalGridMazeGeometry.js"></script>
         <script src="src/maze/mazeBuilder/MazeCarver.js"></script>
         <script src="src/maze/mazeBuilder/DFSMazeCarver.js"></script>
         <script src="src/maze/Maze.js"></script>
     </head>
     <body>
         <canvas id="game-canvas"></canvas>
-        <script src="script2.js"></script>
+        <script src="script.js"></script>
     </body>
 </html>

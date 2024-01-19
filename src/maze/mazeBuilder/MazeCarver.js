@@ -3,6 +3,15 @@ class MazeCarver {
     /** @abstract */
     step(){}
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {boolean}
+     */
     get isFinished(){}
+
+    /**
+     * @abstract
+     * @returns {MazeNode}
+     */
+    get lastChangedCell() {}
 }

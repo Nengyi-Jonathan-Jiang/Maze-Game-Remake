@@ -4,12 +4,16 @@ class Canvas {
         this.viewportWidth = viewportWidth;
         this.viewportHeight = viewportHeight;
         this.ctx = canvasElement.getContext('2d');
+        this.resizeToDisplaySize();
+
+        this.canvasElement.style.setProperty('--w-scale', viewportWidth);
+        this.canvasElement.style.setProperty('--h-scale', viewportHeight);
     }
     resizeToDisplaySize() {
         const { canvasElement, ctx, viewportWidth, viewportHeight } = this;
         const width = canvasElement.width = canvasElement.clientWidth;
         const height = canvasElement.height = canvasElement.clientHeight;
-        ctx.imageSmoothingEnabled = false;
+        // ctx.imageSmoothingEnabled = false;
         ctx.setTransform(width / viewportWidth, 0, 0, height / viewportHeight, 0, 0);
     }
     drawSprite(sprite, x, y) {

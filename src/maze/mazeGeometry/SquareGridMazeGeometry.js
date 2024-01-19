@@ -70,4 +70,12 @@ class SquareGridMazeGeometry extends MazeGeometry {
 
         return [].concat(...result);
     }
+
+    get displayWidth() {
+        return this.rows;
+    }
+
+    get displayHeight() {
+        return this.cols;
+    }
 }

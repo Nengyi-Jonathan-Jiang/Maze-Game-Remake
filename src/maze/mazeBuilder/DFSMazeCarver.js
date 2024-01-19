@@ -39,4 +39,8 @@ class DFSMazeCarver extends MazeCarver {
     get isFinished() {
         return this.#stack.length === 0;
     }
+
+    get lastChangedCell() {
+        return this.#stack[this.#stack.length - 1];
+    }
 }

@@ -21,12 +21,18 @@ class Maze {
         this.#carver.step();
     }
 
+    /** @type {boolean} */
     get isFinishedCarving() {
         return this.#carver.isFinished;
     }
 
-    /** @return {MazeNode[]} */
+    /** @type {MazeNode[]} */
     get nodes() {
         return [...this.#nodes];
+    }
+
+    /** @type {MazeNode} */
+    get lastChangedCell() {
+        return this.#carver.lastChangedCell;
     }
 }
