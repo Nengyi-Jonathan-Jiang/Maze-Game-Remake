@@ -9,7 +9,8 @@ function defaultIfNaN(x, defaultValue) {
 
 // const mazeGeometry = new CubicalGridMazeGeometry(9, 9, 3);
 // const mazeGeometry = new SquareGridMazeGeometry(16, 9);
-const mazeGeometry = new HexagonalGridMazeGeometry(10);
+// const mazeGeometry = new HexagonalGridMazeGeometry(5);
+const mazeGeometry = new TriangleGridMazeGeometry(5);
 const carver = cells => new DFSMazeCarver(cells);
 let maze = new Maze(mazeGeometry, carver);
 
