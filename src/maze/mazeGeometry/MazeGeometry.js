@@ -25,4 +25,12 @@ class MazeGeometry {
      * @returns {number | number[] | null}
      */
     getDirectionForKey(key) {}
+
+    get is3d() {
+        return false;
+    }
+
+    get layers() {
+        return 1;
+    }
 }

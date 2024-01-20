@@ -41,6 +41,16 @@ class MazeNode {
     }
 
     /** @param {MazeNode} other */
+    disconnectFrom(other){
+        if(!other || !this.#neighbors.includes(other) || !other.#neighbors.includes(this)) {
+            throw new Error("Error: disconnecting two incompatible cells");
+        }
+
+        other.#connections.delete(this);
+        this.#connections.delete(other);
+    }
+
+    /** @param {MazeNode} other */
     isConnectedTo(other) {
         return this.#connections.has(other);
     }
@@ -50,13 +60,13 @@ class MazeNode {
     }
 
     /** @type {MazeNode[]} */
-    get connections() {
+    get connectedNeighbors() {
         return [...this.#connections].filter(i => !!i);
     }
 
     /** @type {MazeNode[]} */
-    get unusedNeighbors() {
-        return this.allNeighbors.filter(i => i && !this.isConnectedTo(i));
+    get disconnectedNeighbors() {
+        return this.allNeighbors.filter(i => !!i && !this.isConnectedTo(i));
     }
 
     get identifier() {
@@ -65,11 +75,11 @@ class MazeNode {
 
     /** @type {Sprite[]} */
     get sprites() {
-        return this.#spriteFunction(this.connectedNeighbors, this);
+        return this.#spriteFunction(this.isEachNeighborConnected, this);
     }
 
     /** @type {boolean[]} */
-    get connectedNeighbors() {
+    get isEachNeighborConnected() {
         return this.allNeighbors.map(i => this.isConnectedTo(i));
     }
 
@@ -82,7 +92,7 @@ class MazeNode {
         return recurse ? `MazeNode{id=${
             JSON.stringify(this.identifier)
         }, connectedTo=[${
-            [...this.connections].map(i => i?.toString(false) || null).join(', ')
+            [...this.connectedNeighbors].map(i => i?.toString(false) || null).join(', ')
         }], possibleConnections=[${
             [...this.#neighbors].map(i => i?.toString(false) || null).join(', ')
         }]}` : `MazeNode{${JSON.stringify(this.identifier)}}`

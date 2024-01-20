@@ -64,7 +64,7 @@ class Maze {
             while(q.length > 0 && q[0] !== null) {
                 const curr = q.shift();
                 node = curr;
-                for(let child of curr.connections) {
+                for(let child of curr.connectedNeighbors) {
                     if(!parent.has(child)) {
                         q.push(child);
                         parent.set(child, curr);

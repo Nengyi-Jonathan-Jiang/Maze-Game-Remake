@@ -37,14 +37,17 @@ class TriangleGridMazeGeometry extends MazeGeometry {
 
     // This is magic. Don't question it.
     generate() {
-        const S = this.size * 3 - 2;
+        const S = this.size * 2 - 1;
 
         /** @type {MazeNode[][]} */
         let result = createMatrix((i, j) => (
-            i + j < S && i % 3 !== j % 3
+                   2 - (i + S - 1) % 3 !== j % 3
+                && 2 * i - j < S + 1
+                && 2 * (i + j) > S - 2
+                && 2 * j - i < S + 1
         ) ? new MazeNode(
             [i, j],
-            [i - j / 2, j * Math.sqrt(3) / 2],
+            [i + (this.size - j) / 2, j * Math.sqrt(3) / 2 + 1/2],
             connectedNeighbors => HexagonalGridMazeGeometry.getSprite(connectedNeighbors)
         ) : null, S, S);
         for (let i = 0; i < S; i++) {
@@ -64,28 +67,23 @@ class TriangleGridMazeGeometry extends MazeGeometry {
     }
 
     get displayWidth() {
-        return this.size * 3 - 2;
+        return (this.size * 3 + 1) / 2;
     }
 
     get displayHeight() {
-        return (this.size * 3 - 2) * Math.sqrt(3) / 2;
+        return (this.size * 3 + 1) / Math.sqrt(3);
     }
-
 
     getDirectionForKey(key) {
         switch (key.toLowerCase()) {
+            case 'w':
+                return [3, 5];
             case 'a':
                 return 0;
+            case 's':
+                return [2, 4];
             case 'd':
                 return 1;
-            case 'x':
-                return 2;
-            case 'w':
-                return 3;
-            case 'z':
-                return 4;
-            case 'e':
-                return 5;
         }
         return null;
     }

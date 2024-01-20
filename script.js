@@ -8,13 +8,13 @@ function defaultIfNaN(x, defaultValue) {
 }
 
 // const mazeGeometry = new CubicalGridMazeGeometry(9, 9, 3);
-// const mazeGeometry = new SquareGridMazeGeometry(16, 9);
+const mazeGeometry = new SquareGridMazeGeometry(16, 9);
 // const mazeGeometry = new HexagonalGridMazeGeometry(5);
-const mazeGeometry = new TriangleGridMazeGeometry(5);
+// const mazeGeometry = new TriangleGridMazeGeometry(15);
 const carver = cells => new DFSMazeCarver(cells);
 let maze = new Maze(mazeGeometry, carver);
 
-const canvas = new Canvas(document.getElementById('game-canvas'), mazeGeometry.displayWidth, mazeGeometry.displayHeight);
+const canvas = new Canvas(document.getElementById('game-canvas'), mazeGeometry.displayWidth, mazeGeometry.displayHeight + (mazeGeometry.is3d ? .5 : 0));
 window.onresize = (f => (f(), f))(() => canvas.resizeToDisplaySize());
 let currCell = [0, 0];
 let currPos = [0, 0];
@@ -29,23 +29,23 @@ requestAnimationFrame(function frame() {
     for(let node of maze.nodes) {
         let [x, y, z] = node.displayPos;
         node.sprites.forEach(sprite => {
-            if(z === undefined || currPos[2] === z) {
+            if(!mazeGeometry.is3d || currPos[2] === z) {
                 canvas.drawSprite(sprite, x, y)
             }
         });
     }
 
     canvas.drawSprite(PLAYER_SPRITE, currPos[0], currPos[1]);
-    if(currPos && trophyPos && (currPos[2] === undefined || currPos[2] === trophyPos[2])) {
+    if(currPos && trophyPos && (!mazeGeometry.is3d || currPos[2] === trophyPos[2])) {
         canvas.drawSprite(TROPHY_SPRITE, trophyPos[0], trophyPos[1]);
     }
 
-    if(currPos[2] !== null && currPos[2] !== undefined) {
+    if(mazeGeometry.is3d) {
         canvas.ctx.textAlign = "center";
         canvas.ctx.textBaseline = "middle";
         canvas.ctx.font = '.4px monospace';
         canvas.ctx.fillStyle = '#442610';
-        canvas.ctx.fillText(`Depth = ${currPos[2]}`, mazeGeometry.displayWidth / 2, mazeGeometry.displayHeight - 0.5)
+        canvas.ctx.fillText(`Depth = ${currPos[2]}`, mazeGeometry.displayWidth / 2, mazeGeometry.displayHeight + 0.25)
     }
 
     if (anim !== -1) {

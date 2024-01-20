@@ -69,7 +69,7 @@ class CubicalGridMazeGeometry extends MazeGeometry {
     }
 
     get displayHeight() {
-        return this.cols + 1;
+        return this.cols;
     }
 
     getDirectionForKey(key) {
@@ -81,5 +81,13 @@ class CubicalGridMazeGeometry extends MazeGeometry {
             case ' ': return [4, 5];
         }
         return null;
+    }
+
+    get is3d() {
+        return true;
+    }
+
+    get layers() {
+        return this.lyrs;
     }
 }
