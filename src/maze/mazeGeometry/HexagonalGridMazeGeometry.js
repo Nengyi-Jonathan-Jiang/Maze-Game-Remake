@@ -40,7 +40,7 @@ class HexagonalGridMazeGeometry extends MazeGeometry {
             Math.abs(i - j) < this.size
         ) ? new MazeNode(
             [i, j],
-            [i + (this.size - j - 1) / 2, j * Math.sqrt(3) / 2],
+            [i + (this.size - j) / 2, (j + 1/2) * Math.sqrt(3) / 2],
             connectedNeighbors => HexagonalGridMazeGeometry.getSprite(connectedNeighbors)
         ) : null, 2 * this.size - 1, 2 * this.size - 1);
         for (let i = 0; i < 2 * this.size - 1; i++) {

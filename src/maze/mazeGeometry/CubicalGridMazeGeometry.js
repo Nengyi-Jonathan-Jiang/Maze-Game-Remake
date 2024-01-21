@@ -39,7 +39,7 @@ class CubicalGridMazeGeometry extends MazeGeometry {
         /** @type {MazeNode[][][]} */
         let result = createMatrix((i, j, k) => new MazeNode(
             [i, j, k],
-            [i, j, k],
+            [i + .5, j + .5, k],
             (connectedNeighbors, node) => CubicalGridMazeGeometry.getSprite(connectedNeighbors, node)
         ), this.rows, this.cols, this.lyrs);
         for(let i = 0; i < this.rows; i++) {

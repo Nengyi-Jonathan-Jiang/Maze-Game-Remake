@@ -54,7 +54,7 @@ class SquareGridMazeGeometry extends MazeGeometry {
         /** @type {MazeNode[][]} */
         let result = createMatrix((i, j) => new MazeNode(
             [i, j],
-            [i, j],
+            [i + .5, j + .5],
             connectedNeighbors => SquareGridMazeGeometry.getSprite(connectedNeighbors)
         ), this.rows, this.cols);
         for (let i = 0; i < this.rows; i++) {

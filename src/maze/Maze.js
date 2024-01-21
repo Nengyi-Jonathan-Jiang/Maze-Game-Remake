@@ -8,8 +8,8 @@ class Maze {
     #start;
     /** @type {MazeNode} */
     #end;
-    /** @type {MazeNode[]} */
-    #solutionPath;
+    /** @type {Map<MazeNode, MazeNode>} */
+    #parent;
 
     /**
      * @param {MazeGeometry} geometry
@@ -21,7 +21,7 @@ class Maze {
 
         this.#start = null;
         this.#end = null;
-        this.#solutionPath = null;
+        this.#parent = null;
     }
 
     carve() {
@@ -79,12 +79,22 @@ class Maze {
         [this.#end] = findDeepestNode(this.nodes[0]);
         [this.#start, parent] = findDeepestNode(this.#end);
 
-        let currNode = this.#start;
-        this.#solutionPath = [];
+        this.#parent = parent;
+    }
+
+    /**
+     * @param {MazeNode} currNode
+     * @returns {MazeNode[]}
+     */
+    calculateSolutionFromNode(currNode){
+        if(!this.#parent) return [];
+
+        const solutionPath = [];
         while(currNode !== null) {
-            this.#solutionPath.push(currNode)
-            currNode = parent.get(currNode);
+            solutionPath.push(currNode)
+            currNode = this.#parent.get(currNode);
         }
+        return solutionPath;
     }
 
     /** @type {MazeNode} */
@@ -94,9 +104,5 @@ class Maze {
     /** @type {MazeNode} */
     get end() {
         return this.#end;
-    }
-    /** @type {MazeNode[]} */
-    get solutionPath() {
-        return [...this.#solutionPath];
     }
 }

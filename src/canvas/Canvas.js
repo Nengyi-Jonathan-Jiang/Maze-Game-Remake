@@ -20,7 +20,7 @@ class Canvas {
         if(!sprite || !sprite.img) return;
         const { ctx } = this;
         const { width, height, img, sx, sy, sw, sh } = sprite;
-        ctx.drawImage(img, sx * img.width, sy * img.height, sw * img.width, sh * img.height, x, y, width, height);
+        ctx.drawImage(img, sx * img.width, sy * img.height, sw * img.width, sh * img.height, x - width / 2, y - height / 2, width, height);
     }
     clear(color) {
         this.ctx.save();
