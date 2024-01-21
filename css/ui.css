@@ -1,0 +1,221 @@
+@font-face {
+    font-family: Nunito;
+    src:         url("../res/font/Nunito/Nunito-VariableFont_wght.ttf");
+}
+
+@font-face {
+    font-family: "JetBrains Mono";
+    src:         url("../res/font/Jetbrains_Mono/JetBrainsMono-VariableFont_wght.ttf"),
+                 url("https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2") format("woff2"),
+                 url("https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff/JetBrainsMono-Regular.woff") format("woff");
+}
+
+* {
+    box-sizing: border-box;
+    font:       inherit;
+    background: transparent;
+    color:      inherit;
+    outline:    none;
+    border:     0;
+}
+
+h1 {
+    font-size:   250%;
+    font-weight: bold;
+}
+
+body {
+    margin:      0;
+    position:    absolute;
+    top:         0;
+    left:        0;
+    right:       0;
+    bottom:      0;
+    overflow:    hidden;
+    font-family: Nunito, Arial, sans-serif;
+    font-size:   20px;
+}
+
+button {
+    border:           0;
+    width:            fit-content;
+    padding:          5px 15px;
+    background-color: #08f;
+    border-radius:    35px;
+    color:            white;
+    transition:       transform .2s;
+    transform:        scale(1);
+}
+
+button:hover {
+    transform: scale(1.1);
+}
+
+button.play-button::after {
+    content:     "|>";
+    font-family: "JetBrains Mono", sans-serif;
+}
+
+
+.select-container {
+    position:      relative;
+    display:       inline-flex;
+    width:         fit-content;
+    border-radius: 16px;
+    background:    linear-gradient(80deg, #0f8 0%, #0bf 30%, #08f 50%, #f08 100%);
+    color:         white;
+    user-select:   none;
+}
+
+.select-container input[type=radio] {
+    display:            none;
+    appearance:         none;
+    -webkit-appearance: none;
+}
+
+.select-container label {
+    display:    inline-block;
+    width:      75px;
+    text-align: center;
+    margin:     3px 10px;
+}
+
+.select-container span:last-child {
+    position:       absolute;
+    display:        block;
+    width:          95px;
+    height:         100%;
+    outline:        2px solid white;
+    border-radius:  16px;
+    outline-offset: -4px;
+    left:           0;
+    transition:     left .25s;
+}
+
+.select-container input:checked + * + * + * + * + * + span:last-child {
+    left: 95px
+}
+
+.select-container input:checked + * + * + * + span:last-child {
+    left: 190px
+}
+
+.select-container input:checked + * + span:last-child {
+    left: 285px
+}
+
+
+label {
+    display:         flex;
+    align-items:     center;
+    justify-content: start;
+    user-select:     none;
+}
+
+label.toggle > input[type=checkbox] {
+    display:            none;
+    appearance:         none;
+    -webkit-appearance: none;
+}
+
+label.toggle > span.toggle-switch {
+    display:          inline-block;
+    width:            48px;
+    height:           24px;
+    border-radius:    12px;
+    background-color: gray;
+    margin-right:     12px;
+    position:         relative;
+    transition:       background-color .25s;
+}
+
+label.toggle > input[type=checkbox]:not(:checked) ~ span[data-switch-off]::after {
+    content: attr(data-switch-off);
+}
+
+label.toggle > input[type=checkbox]:checked ~ span[data-switch-on]::after {
+    content: attr(data-switch-on);
+}
+
+label.toggle > span.toggle-switch::after {
+    position:         absolute;
+    content:          "";
+    display:          block;
+    border-radius:    10px;
+    width:            20px;
+    height:           20px;
+    top:              2px;
+    left:             2px;
+    background-color: white;
+    transition:       left .25s;
+}
+
+label.toggle > input:checked + span.toggle-switch {
+    background: #08f
+}
+
+label.toggle > input:checked + span.toggle-switch::after {
+    left: 26px
+}
+
+
+label:has(input[type=range]) {
+    display:        flex;
+    flex-direction: row;
+}
+
+input[type=range] {
+    -webkit-appearance: none;
+    appearance:         none;
+    -moz-appearance:    none;
+    background:         transparent;
+    flex-grow:          1;
+    margin:             .3em .5em -.3em;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    display:            block;
+    background:         #08f;
+    width:              .2em;
+    height:             .8em;
+    border-radius:      0;
+    position:           relative;
+    top:                -.3em;
+    border:             none;
+}
+
+input[type=range]::-moz-range-thumb {
+    -moz-appearance: none;
+    display:         block;
+    background:      #08f;
+    width:           .2em;
+    height:          .8em;
+    border-radius:   0;
+    border:          none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    background:         #08f;
+    height:             .2em;
+    border-radius:      .1em;
+    position:           relative;
+    bottom:             .3em;
+}
+
+input[type=range]::-moz-range-track {
+    -moz-appearance: none;
+    background:      #08f;
+    height:          .2em;
+    border:          none;
+    border-radius:   .1em;
+}
+
+input[type=range] + span {
+    display:    inline-block;
+    min-width:  1.5em;
+    max-width:  1.5em;
+    text-align: right;
+    min-height: 0.5em;
+}

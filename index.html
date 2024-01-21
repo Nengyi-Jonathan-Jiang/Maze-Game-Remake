@@ -1,44 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title></title>
-        <style>
-            body { 
-                background-color: #77421C;
-                margin: 0; padding: 0; 
-                position: absolute; 
-                top: 0; left: 0; 
-                width: 100vw; height: 100vh; 
+	<head>
+		<title>Maze Generator</title>
+		<style>
+			body {
+				margin:          0;
+				padding:         0;
+				position:        absolute;
+				top:             0;
+				left:            0;
+				width:           100vw;
+				height:          100vh;
 
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            canvas {
-				--w-scale: 1;
-				--h-scale: 1;
-                --d: min(100vw / var(--w-scale), 100vh / var(--h-scale));
-                width: calc(var(--d) * var(--w-scale));
-                height: calc(var(--d) * var(--h-scale));
-                outline: 1px solid white;
-            }
-        </style>
+				display:         flex;
+				flex-direction:  column;
+				align-items:     center;
+				justify-content: center;
+			}
+
+			canvas {
+				width:   calc(50vw);
+				height:  calc(50vw);
+				outline: 1px solid white;
+			}
+
+			#content {
+				display:         flex;
+				flex-direction:  row;
+				align-items:     center;
+				justify-content: center;
+			}
+		</style>
 
 		<script src="src/util.js"></script>
-        <script src="src/canvas/Sprite.js"></script>
-        <script src="src/canvas/Canvas.js"></script>
+
+		<script src="src/canvas/Sprite.js"></script>
+		<script src="src/canvas/Canvas.js"></script>
+
 		<script src="src/maze/MazeNode.js"></script>
 		<script src="src/maze/mazeGeometry/MazeGeometry.js"></script>
 		<script src="src/maze/mazeGeometry/SquareGridMazeGeometry.js"></script>
 		<script src="src/maze/mazeGeometry/CubicalGridMazeGeometry.js"></script>
 		<script src="src/maze/mazeGeometry/HexagonalGridMazeGeometry.js"></script>
-        <script src="src/maze/mazeGeometry/TriangleGridMazeGeometry.js"></script>
-        <script src="src/maze/mazeBuilder/MazeCarver.js"></script>
-        <script src="src/maze/mazeBuilder/DFSMazeCarver.js"></script>
-        <script src="src/maze/Maze.js"></script>
-    </head>
-    <body>
-        <canvas id="game-canvas"></canvas>
-        <script src="script.js"></script>
-    </body>
+		<script src="src/maze/mazeGeometry/TriangleGridMazeGeometry.js"></script>
+		<script src="src/maze/mazeBuilder/MazeCarver.js"></script>
+		<script src="src/maze/mazeBuilder/DFSMazeCarver.js"></script>
+		<script src="src/maze/Maze.js"></script>
+		<link rel="stylesheet" href="css/ui.css" type="text/css">
+
+		<script src="src/maze-game.js"></script>
+	</head>
+	<body>
+		<div id="content">
+			<div>
+				<div>
+					<span class="select-container">
+							<input type="radio" name="maze-geometry" id="maze-geometry-1" checked tabindex="-1">
+							<label for="maze-geometry-1">Square</label>
+							<input type="radio" name="maze-geometry" id="maze-geometry-2" tabindex="-1">
+							<label for="maze-geometry-2">Triangle</label>
+							<input type="radio" name="maze-geometry" id="maze-geometry-3" tabindex="-1">
+							<label for="maze-geometry-3">Hex</label>
+							<input type="radio" name="maze-geometry" id="maze-geometry-4" tabindex="-1">
+							<label for="maze-geometry-4">Cube</label>
+							<span class="select-marker"></span>
+						</span>
+				</div>
+				<p>
+					<label for="maze-size">
+						<span>Maze size: </span>
+						<input type="range" id="maze-size" min="4" max="40" value="10" tabindex="-1">
+						<span id="maze-size-display">10</span>
+					</label>
+				</p>
+				<p>
+					<label for="view-radius">
+						<span>View radius: </span>
+						<input type="range" id="view-radius" min="2" max="25" value="4" step="0.1" tabindex="-1">
+						<span id="view-radius-display">4</span>
+					</label>
+				</p>
+				<p>
+					<label for="show-solution" class="toggle">
+						<input type="checkbox" id="show-solution" tabindex="-1">
+						<span class="toggle-switch"></span>
+						<span data-switch-on="Show solution" data-switch-off="Show solution"></span>
+					</label>
+				</p>
+				<p>
+					<label for="show-generation" class="toggle">
+						<input type="checkbox" id="show-generation" checked tabindex="-1">
+						<span class="toggle-switch"></span>
+						<span data-switch-on="Show maze generation" data-switch-off="Show maze generation"></span>
+					</label>
+				</p>
+				<p>
+					<button id="regenerate" tabindex="-1">Generate new</button>
+				</p>
+			</div>
+
+			<canvas id="game-canvas"></canvas>
+		</div>
+		<script src="script.js"></script>
+	</body>
 </html>

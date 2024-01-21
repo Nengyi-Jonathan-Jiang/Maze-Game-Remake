@@ -11,12 +11,16 @@ class Maze {
     /** @type {Map<MazeNode, MazeNode>} */
     #parent;
 
+    /** @type {MazeGeometry} */
+    #geometry;
+
     /**
      * @param {MazeGeometry} geometry
      * @param {(cells: MazeNode[]) => MazeCarver} carver
      */
     constructor(geometry, carver) {
         this.#nodes = geometry.generate();
+        this.#geometry = geometry;
         this.#carver = carver(this.#nodes);
 
         this.#start = null;
@@ -104,5 +108,10 @@ class Maze {
     /** @type {MazeNode} */
     get end() {
         return this.#end;
+    }
+
+    /** @type {MazeGeometry} */
+    get geometry() {
+        return this.#geometry;
     }
 }

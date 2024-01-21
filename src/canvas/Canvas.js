@@ -1,16 +1,85 @@
 class Canvas {
-    constructor(canvasElement, viewportWidth, viewportHeight) {
-        this.canvasElement = canvasElement;
-        this.viewportWidth = viewportWidth;
-        this.viewportHeight = viewportHeight;
-        this.ctx = canvasElement.getContext('2d');
-        this.resizeToDisplaySize();
+    /** @type {HTMLCanvasElement | null}*/
+    #canvasElement = null;
+    /** @type {CanvasRenderingContext2D | null} */
+    #ctx = null;
 
-        this.canvasElement.style.setProperty('--w-scale', viewportWidth);
-        this.canvasElement.style.setProperty('--h-scale', viewportHeight);
+    /** @type */
+    #viewportWidth = 16;
+    #viewportHeight = 9;
+
+    /**
+     * @param {HTMLElement} canvasElement
+     * @param {number} [viewportWidth]
+     * @param {number} [viewportHeight]
+     */
+    constructor(canvasElement, viewportWidth, viewportHeight) {
+        this.el = canvasElement;
+        viewportWidth && (this.viewportWidth = viewportWidth);
+        viewportHeight && (this.viewportHeight = viewportHeight);
     }
+
+    /** @param {HTMLCanvasElement | null} canvasElement */
+    set el(canvasElement) {
+        this.#canvasElement = canvasElement;
+
+        if(!this.#canvasElement) {
+            this.#ctx = null;
+            return;
+        }
+
+        this.#ctx = canvasElement.getContext('2d');
+        this.#canvasElement.style.setProperty('--w-scale', `${this.viewportWidth}`);
+        this.#canvasElement.style.setProperty('--h-scale', `${this.viewportHeight}`);
+        this.resizeToDisplaySize();
+    }
+
+    /** @type {CanvasRenderingContext2D} */
+    get ctx() {
+        return this.#ctx;
+    }
+
+    /** @param {function(CanvasRenderingContext2D):any} func */
+    withCtx(func) {
+        this.ctx && func(this.ctx);
+    }
+
+    get viewportWidth() {
+        return this.#viewportWidth;
+    }
+
+    /** @param {number} viewportWidth */
+    set viewportWidth(viewportWidth) {
+        this.#viewportWidth = viewportWidth;
+        if(this.canvasElement) {
+            this.canvasElement.style.setProperty('--w-scale', `${this.viewportWidth}`);
+            this.resizeToDisplaySize();
+        }
+    }
+
+    get viewportHeight() {
+        return this.#viewportHeight;
+    }
+
+    /** @param {number} viewportHeight */
+    set viewportHeight(viewportHeight) {
+        this.#viewportHeight = viewportHeight;
+        if(this.canvasElement) {
+            this.canvasElement.style.setProperty('--h-scale', `${this.viewportHeight}`);
+            this.resizeToDisplaySize();
+        }
+    }
+
+    /** @type {HTMLCanvasElement} */
+    get canvasElement() {
+        return this.#canvasElement;
+    }
+
     resizeToDisplaySize() {
         const { canvasElement, ctx, viewportWidth, viewportHeight } = this;
+
+        if(!canvasElement) return;
+
         const width = canvasElement.width = canvasElement.clientWidth;
         const height = canvasElement.height = canvasElement.clientHeight;
         // ctx.imageSmoothingEnabled = false;
@@ -23,7 +92,7 @@ class Canvas {
      * @param {number} y
      */
     drawSprite(sprite, x, y) {
-        if(!sprite || !sprite.img) return;
+        if(!this.canvasElement || !sprite || !sprite.img) return;
         const { ctx } = this;
         const { width, height, img, sx, sy, sw, sh } = sprite;
 
@@ -46,6 +115,8 @@ class Canvas {
         }
     }
     clear(color) {
+        if(!this.ctx) return;
+
         this.ctx.save();
         this.ctx.resetTransform();
         if (color) {

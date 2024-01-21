@@ -18,6 +18,7 @@ class DFSMazeCarver extends MazeCarver {
         while(!this.isFinished) {
             const p = this.#stack[this.#stack.length - 1];
             this.#visited.add(p);
+
             //Get neighbors
             const neighbors = p.disconnectedNeighbors.filter(i => !this.#visited.has(i));
             if(neighbors.length < 2) {
@@ -32,7 +33,7 @@ class DFSMazeCarver extends MazeCarver {
 
             this.#stack.push(neighbor);
 
-            break;
+            return;
         }
     }
 
