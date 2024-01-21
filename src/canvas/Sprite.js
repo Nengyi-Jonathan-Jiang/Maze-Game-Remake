@@ -18,6 +18,8 @@ class Sprite {
     /** @type {HTMLImageElement} */
     #img;
 
+    #optimized = false;
+
     /**
      * @param {number} width
      * @param {number} height
@@ -78,5 +80,29 @@ class Sprite {
             image.onload = _ => resolve(image);
             image.src = url;
         });
+    }
+
+
+    static #canvas = document.createElement('canvas');
+    static #ctx = Sprite.#canvas.getContext('2d');
+
+    optimize(){
+        if(this.optimized) return;
+
+        const {width, height} = this.img;
+        const {sx, sy, sw, sh} = this;
+
+        Sprite.#ctx.clearRect(0, 0, width * sw, height * sh);
+        Sprite.#canvas.width = ~~(width * sw);
+        Sprite.#canvas.height = ~~(height * sh);
+        Sprite.#ctx.drawImage(this.img, width * sx, height * sy, width * sw, height * sh, 0, 0, width * sw, height * sh);
+
+        this.#img = null;
+        Sprite.loadImage(Sprite.#canvas.toDataURL()).then(img => this.#img = img)
+        this.#optimized = true;
+    }
+
+    get optimized() {
+        return this.#optimized;
     }
 }

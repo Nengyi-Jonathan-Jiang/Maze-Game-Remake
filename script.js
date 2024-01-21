@@ -15,10 +15,16 @@ const mazeGeometry = new TriangleGridMazeGeometry(15);
 const carver = cells => new DFSMazeCarver(cells);
 let maze = new Maze(mazeGeometry, carver);
 
-const canvas = new Canvas(document.getElementById('game-canvas'), mazeGeometry.displayWidth, mazeGeometry.displayHeight + (mazeGeometry.is3d ? .5 : 0));
+const canvas = new Canvas(
+    document.getElementById('game-canvas'),
+    // mazeGeometry.displayWidth,
+    // mazeGeometry.displayHeight + (mazeGeometry.is3d ? .5 : 0)
+    8, 8
+);
 window.onresize = (f => (f(), f))(() => canvas.resizeToDisplaySize());
 let currNode = [0, 0];
 let currPos = [0, 0];
+let cameraPos = [0, 0];
 let targetPos = null;
 let trophyPos = null;
 let eQueue = [];
@@ -33,13 +39,35 @@ function onFinishCarving() {
 }
 
 requestAnimationFrame(function frame() {
+
+    // update camera pos
+
+    {
+        const dx = currPos[0] - cameraPos[0];
+        const dy = currPos[1] - cameraPos[1];
+        const r = Math.hypot(dx, dy);
+
+        if(r !== 0) {
+
+            const step_r = r * 0.05;
+
+            cameraPos = [
+                cameraPos[0] + dx * step_r / r,
+                cameraPos[1] + dy * step_r / r
+            ]
+        }
+    }
+
     canvas.clear();
+
+    const offsetX = -cameraPos[0] + 3.5;
+    const offsetY = -cameraPos[1] + 3.5;
 
     for(let node of maze.nodes) {
         let [x, y, z] = node.displayPos;
         node.sprites.forEach(sprite => {
             if(!mazeGeometry.is3d || currPos[2] === z) {
-                canvas.drawSprite(sprite, x, y)
+                canvas.drawSprite(sprite, x + offsetX, y + offsetY)
             }
         });
     }
@@ -61,30 +89,23 @@ requestAnimationFrame(function frame() {
                 if (mazeGeometry.is3d && (a[2] !== currPos[2] || b[2] !== currPos[2]))
                     break;
 
-                canvas.ctx.moveTo(a[0], a[1]);
-                canvas.ctx.lineTo(b[0], b[1]);
+                canvas.ctx.moveTo(a[0] + offsetX, a[1] + offsetY);
+                canvas.ctx.lineTo(b[0] + offsetX, b[1] + offsetY);
             }
             canvas.ctx.closePath();
             canvas.ctx.stroke();
             canvas.ctx.fill();
             canvas.ctx.beginPath();
-            canvas.ctx.arc(end[0], end[1], 0.1875, 0, Math.PI * 2);
+            canvas.ctx.arc(end[0] + offsetX, end[1] + offsetY, 0.1875, 0, Math.PI * 2);
             canvas.ctx.closePath();
             canvas.ctx.fill();
         }
     }
 
-    canvas.drawSprite(PLAYER_SPRITE, currPos[0], currPos[1]);
-    if(currPos && trophyPos && (!mazeGeometry.is3d || currPos[2] === trophyPos[2])) {
-        canvas.drawSprite(TROPHY_SPRITE, trophyPos[0], trophyPos[1]);
-    }
+    canvas.drawSprite(PLAYER_SPRITE, currPos[0] + offsetX, currPos[1] + offsetY);
 
-    if(mazeGeometry.is3d) {
-        canvas.ctx.textAlign = "center";
-        canvas.ctx.textBaseline = "middle";
-        canvas.ctx.font = '.4px monospace';
-        canvas.ctx.fillStyle = '#442610';
-        canvas.ctx.fillText(`Depth = ${currPos[2] + 1}`, mazeGeometry.displayWidth / 2, mazeGeometry.displayHeight + 0.25)
+    if(currPos && trophyPos && (!mazeGeometry.is3d || currPos[2] === trophyPos[2])) {
+        canvas.drawSprite(TROPHY_SPRITE, trophyPos[0] + offsetX, trophyPos[1] + offsetY);
     }
 
     if (anim !== -1) {
@@ -98,7 +119,7 @@ requestAnimationFrame(function frame() {
             );
             // maze.carve();
             currNode = maze.nodes[0];
-            currPos = currNode.displayPos;
+            cameraPos = currPos = currNode.displayPos;
         }
         anim++;
         if (anim === 60)
@@ -106,7 +127,10 @@ requestAnimationFrame(function frame() {
     } else if (!maze.isFinishedCarving) {
         maze.carveStep();
 
-        if(maze.lastChangedCell?.displayPos) currPos = maze.lastChangedCell?.displayPos
+        if(maze.lastChangedCell?.displayPos)
+            currPos = maze.lastChangedCell?.displayPos;
+
+        cameraPos = currPos;
 
         if(maze.isFinishedCarving) {
             onFinishCarving();

@@ -6,7 +6,7 @@ class SquareGridMazeGeometry extends MazeGeometry {
 
     /** @type {Sprite[][]} */
     static MAZE_CELL_TEXTURES = createMatrix((i, j) => new Sprite(
-        1, 1, {
+        1.01, 1.01, {
             img: Sprite.loadImage('res/Cells.png'), sx: i * 0.25, sy: j * 0.25, sw: 0.25, sh: 0.25
         }
     ), 4, 4);
