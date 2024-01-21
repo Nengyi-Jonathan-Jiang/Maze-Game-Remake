@@ -28,8 +28,8 @@ class Canvas {
         const { width, height, img, sx, sy, sw, sh } = sprite;
 
         {   // Culling images that are not drawn
-            const bbx = Math.min(x, x + width);
-            const bby = Math.min(y, y + height);
+            const bbx = Math.min(x - width / 2, x + width / 2);
+            const bby = Math.min(y - height / 2, y + height / 2);
 
             if(bbx >= this.viewportWidth) return;
             if(bby >= this.viewportHeight) return;
@@ -38,7 +38,7 @@ class Canvas {
         }
 
         if(sprite.optimized) {
-            ctx.drawImage(img, x, y, width, height);
+            ctx.drawImage(img, x - width / 2, y - height / 2, width, height);
         }
         else {
             ctx.drawImage(img, sx * img.width, sy * img.height, sw * img.width, sh * img.height, x - width / 2, y - height / 2, width, height);

@@ -10,8 +10,8 @@ function defaultIfNaN(x, defaultValue) {
 // const mazeGeometry = new CubicalGridMazeGeometry(32, 18, 5);
 // const mazeGeometry = new CubicalGridMazeGeometry(16, 9, 3);
 // const mazeGeometry = new SquareGridMazeGeometry(16, 9);
-// const mazeGeometry = new HexagonalGridMazeGeometry(10);
-const mazeGeometry = new TriangleGridMazeGeometry(15);
+const mazeGeometry = new HexagonalGridMazeGeometry(10);
+// const mazeGeometry = new TriangleGridMazeGeometry(15);
 const carver = cells => new DFSMazeCarver(cells);
 let maze = new Maze(mazeGeometry, carver);
 
@@ -60,8 +60,8 @@ requestAnimationFrame(function frame() {
 
     canvas.clear();
 
-    const offsetX = -cameraPos[0] + 3.5;
-    const offsetY = -cameraPos[1] + 3.5;
+    const offsetX = -cameraPos[0] + 4;
+    const offsetY = -cameraPos[1] + 4;
 
     for(let node of maze.nodes) {
         let [x, y, z] = node.displayPos;
