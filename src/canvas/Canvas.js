@@ -16,11 +16,34 @@ class Canvas {
         // ctx.imageSmoothingEnabled = false;
         ctx.setTransform(width / viewportWidth, 0, 0, height / viewportHeight, 0, 0);
     }
+
+    /**
+     * @param {Sprite} sprite
+     * @param {number} x
+     * @param {number} y
+     */
     drawSprite(sprite, x, y) {
         if(!sprite || !sprite.img) return;
         const { ctx } = this;
         const { width, height, img, sx, sy, sw, sh } = sprite;
-        ctx.drawImage(img, sx * img.width, sy * img.height, sw * img.width, sh * img.height, x, y, width, height);
+
+        {   // Culling images that are not drawn
+            const bbx = Math.min(x, x + width);
+            const bby = Math.min(y, y + height);
+
+            if(bbx >= this.viewportWidth) return;
+            if(bby >= this.viewportHeight) return;
+            if(bbx + Math.abs(width) <= 0) return;
+            if(bby + Math.abs(height) <= 0) return;
+        }
+
+        if(sprite.optimized) {
+            ctx.drawImage(img, x, y, width, height);
+        }
+        else {
+            ctx.drawImage(img, sx * img.width, sy * img.height, sw * img.width, sh * img.height, x, y, width, height);
+            sprite.optimize();
+        }
     }
     clear(color) {
         this.ctx.save();

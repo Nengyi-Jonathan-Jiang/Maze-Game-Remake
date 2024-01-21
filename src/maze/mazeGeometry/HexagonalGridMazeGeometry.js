@@ -4,7 +4,7 @@ class HexagonalGridMazeGeometry extends MazeGeometry {
 
     /** @type {Sprite[][]} */
     static MAZE_CELL_TEXTURES = createMatrix((i, j) => new Sprite(
-        1, 2 / Math.sqrt(3), {
+        1.01, 2.01 / Math.sqrt(3), {
             img: Sprite.loadImage('res/hex-cells.png'), sx: i * 0.125, sy: j * 0.125, sw: 0.125, sh: 0.125
         }
     ), 8, 8);
