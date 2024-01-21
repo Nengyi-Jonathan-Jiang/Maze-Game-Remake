@@ -19,6 +19,7 @@ class Sprite {
     #img;
 
     #optimized = false;
+    #optimizeSuccessful = false;
 
     /**
      * @param {number} width
@@ -89,20 +90,34 @@ class Sprite {
     optimize(){
         if(this.optimized) return;
 
-        const {width, height} = this.img;
-        const {sx, sy, sw, sh} = this;
+        try {
 
-        Sprite.#ctx.clearRect(0, 0, width * sw, height * sh);
-        Sprite.#canvas.width = ~~(width * sw);
-        Sprite.#canvas.height = ~~(height * sh);
-        Sprite.#ctx.drawImage(this.img, width * sx, height * sy, width * sw, height * sh, 0, 0, width * sw, height * sh);
+            const {width, height} = this.img;
+            const {sx, sy, sw, sh} = this;
 
-        this.#img = null;
-        Sprite.loadImage(Sprite.#canvas.toDataURL()).then(img => this.#img = img)
-        this.#optimized = true;
+            Sprite.#ctx.clearRect(0, 0, width * sw, height * sh);
+            Sprite.#canvas.width = ~~(width * sw);
+            Sprite.#canvas.height = ~~(height * sh);
+            Sprite.#ctx.drawImage(this.img, width * sx, height * sy, width * sw, height * sh, 0, 0, width * sw, height * sh);
+
+            Sprite.loadImage(Sprite.#canvas.toDataURL()).then(img => this.#img = img)
+
+            this.#optimizeSuccessful = true;
+        }
+        catch (e) {
+            console.warn('Unsuccessful sprite optimization.')
+            console.warn(e);
+        }
+        finally {
+            this.#optimized = true;
+        }
     }
 
     get optimized() {
         return this.#optimized;
+    }
+
+    get wasOptimizationSuccessful() {
+        return this.#optimizeSuccessful;
     }
 }

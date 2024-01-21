@@ -37,7 +37,7 @@ class Canvas {
             if(bby + Math.abs(height) <= 0) return;
         }
 
-        if(sprite.optimized) {
+        if(sprite.wasOptimizationSuccessful) {
             ctx.drawImage(img, x - width / 2, y - height / 2, width, height);
         }
         else {
